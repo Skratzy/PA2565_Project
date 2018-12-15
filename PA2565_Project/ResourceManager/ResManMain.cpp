@@ -11,6 +11,7 @@
 #include <chrono>
 #include <atomic>
 
+
 #define SOKOL_IMPL
 #define SOKOL_D3D11
 #define SOKOL_D3D11_SHADER_COMPILER
@@ -32,6 +33,9 @@ extern "C" {
 
 #include "ziplib/zip.h"
 
+#include "../MemoryManager/GlutManager.h"
+#include "GL/freeglut.h"
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 	// Check for memory leaks
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -43,20 +47,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	freopen_s(&a, "CONIN$", "r", stdin);
 	freopen_s(&a, "CONOUT$", "w", stdout);
 	freopen_s(&a, "CONOUT$", "w", stderr);
-//#endif
+	//#endif
 
-	/* setup d3d11 app wrapper and sokol_gfx */
-    const int msaa_samples = 4;
-    const int width = 800;
-    const int height = 600;
-    d3d11_init(width, height, msaa_samples, L"Sokol TexCube D3D11");
+		/* setup d3d11 app wrapper and sokol_gfx */
+	const int msaa_samples = 4;
+	const int width = 800;
+	const int height = 600;
+	d3d11_init(width, height, msaa_samples, L"PA2565 Project");
 
 	sg_desc sgDesc{ 0 };
 	sgDesc.d3d11_device = d3d11_device();
 	sgDesc.d3d11_device_context = d3d11_device_context();
 	sgDesc.d3d11_render_target_view_cb = d3d11_render_target_view;
 	sgDesc.d3d11_depth_stencil_view_cb = d3d11_depth_stencil_view;
-    sg_setup(&sgDesc);
+	sg_setup(&sgDesc);
 
 
 	std::ifstream file;
@@ -90,7 +94,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	sgsd.fs.images[0].type = SG_IMAGETYPE_2D;
 	sgsd.vs.source = vsString.c_str();
 	sgsd.fs.source = psString.c_str();
-    /* create shader */
+	/* create shader */
 	sg_shader shd = sg_make_shader(&sgsd);
 
 	/* pipeline object */
@@ -116,13 +120,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//sg_color_attachment_action sgcaa{ SG_ACTION_CLEAR, 0.f };
 	//pass_action.colors[0] = sgcaa;
 
-    /* view-projection matrix */
-    hmm_mat4 proj = HMM_Perspective(60.0f, static_cast<float>(width)/static_cast<float>(height), 0.01f, 1000.0f);
+	/* view-projection matrix */
+	hmm_mat4 proj = HMM_Perspective(60.0f, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
 	auto camEye = HMM_Vec4(0.0f, 1.5f, 6.0f, 0.f);
 	auto camCenter = HMM_Vec3(0.0f, 0.0f, 0.0f);
 	auto camUp = HMM_Vec3(0.0f, 1.0f, 0.0f);
 
-    float rx = 0.0f, ry = 0.0f;
+	float rx = 0.0f, ry = 0.0f;
 	vs_params_t vsParams;
 	auto sunDirVec = HMM_Vec4(0.f, -1.f, 0.f, 0.f);
 	vsParams.sunDir = sunDirVec;
@@ -155,19 +159,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//models.push_back(house);
 	//house->getTransform().translate(HMM_Vec3(0.f, -10.f, -20.f));
 	//house->getTransform().setScale(HMM_Vec3(10.f, 10.f, 10.f));
-	
+
 	/*
 		Testcases
 	*/
-	
+
 	/*
 	// Support for all supported formats and loading from zip folders
 	*/
-	
+
 	/*
 	* OBJ
 	*/
-	models.push_back(RM_NEW(Model));
+	/*models.push_back(RM_NEW(Model));
 	auto start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
@@ -185,11 +189,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugMsg = std::string("Loading of teapot.obj from zip took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	
+
 	/*
 	* RMMesh
 	*/
-	models.push_back(RM_NEW(Model));
+	/*models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh")));
@@ -211,7 +215,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* PNG
 	*/
-	models.push_back(RM_NEW(Model));
+	/*models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
@@ -233,7 +237,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* JPG
 	*/
-	models.push_back(RM_NEW(Model));
+	/*models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
@@ -255,7 +259,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMTex
 	*/
-	models.push_back(RM_NEW(Model));
+	/*models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex")));
@@ -327,68 +331,86 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		End of testcases
 	*/
 
-	auto startTime = std::chrono::high_resolution_clock::now();
-    while (d3d11_process_events()) {
 
-		/*Extremely simple camera rotation*/
-		hmm_mat4 view = HMM_LookAt(HMM_Vec3(camEye.X, camEye.Y, camEye.Z), camCenter, camUp);
-		hmm_mat4 view_proj = HMM_MultiplyMat4(proj, view);
-		vsParams.vp = view_proj;
-		//camEye = HMM_MultiplyMat4ByVec4(HMM_Rotate(1.f, camUp), camEye);
+	bool keepRunning = true;
+	
+	auto sokolFunc = [&camEye, &vsParams, &camCenter, &camUp, &proj, &pass_action, &sunDir, &sunDirVec, &models, &rm, &drawState, &keepRunning]() {
+		auto startTime = std::chrono::high_resolution_clock::now();
+		while (d3d11_process_events()) {
 
-        /* draw frame */
-        sg_begin_default_pass(&pass_action, d3d11_width(), d3d11_height());
+			/*Extremely simple camera rotation*/
+			hmm_mat4 view = HMM_LookAt(HMM_Vec3(camEye.X, camEye.Y, camEye.Z), camCenter, camUp);
+			hmm_mat4 view_proj = HMM_MultiplyMat4(proj, view);
+			vsParams.vp = view_proj;
+			//camEye = HMM_MultiplyMat4ByVec4(HMM_Rotate(1.f, camUp), camEye);
 
-		sunDir.rotateAroundX(0.3f);
-		vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
-		
-		bool switchModels = false;
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(500)) {
-			startTime = std::chrono::high_resolution_clock::now();
-			switchModels = true;
-		}
-		switchModels = false;
-		float index = 0.1f;
-		for (auto model : models) {
-			//model->getTransform().rotateAroundY(5.f);
-			model->draw(drawState, vsParams);
-			if (switchModels) {
-				auto rndVal = std::rand() % 100;
-				
-				if (rndVal < 10) {
-					model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals.obj")));
-				}
-				else if (rndVal < 50){
-					model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
-				}
-				else {
-					model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals-test.obj")));
-				}
+			/* draw frame */
+			sg_begin_default_pass(&pass_action, d3d11_width(), d3d11_height());
 
-				if (rndVal < 30) {
-					model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
-				}
-				else if (rndVal < 50) {
-					model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
-				}
-				else {
-					model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testFile.png")));
+			sunDir.rotateAroundX(0.3f);
+			vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
+
+			bool switchModels = false;
+			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(500)) {
+				startTime = std::chrono::high_resolution_clock::now();
+				switchModels = true;
+			}
+			switchModels = false;
+			float index = 0.1f;
+			for (auto model : models) {
+				//model->getTransform().rotateAroundY(5.f);
+				model->draw(drawState, vsParams);
+				if (switchModels) {
+					auto rndVal = std::rand() % 100;
+
+					if (rndVal < 10) {
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals.obj")));
+					}
+					else if (rndVal < 50) {
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
+					}
+					else {
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals-test.obj")));
+					}
+
+					if (rndVal < 30) {
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
+					}
+					else if (rndVal < 50) {
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
+					}
+					else {
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testFile.png")));
+					}
 				}
 			}
+
+
+			sg_end_pass();
+			sg_commit();
+			d3d11_present();
 		}
 
-		sg_end_pass();
-		sg_commit();
-		d3d11_present();
-	}
+		for (auto m : models) {
+			m->~Model();
+			::operator delete(m);
+		}
 
-	for (auto m : models) {
-		m->~Model();
-		::operator delete(m);
-	}
+		rm.cleanup();
+		sg_shutdown();
+		d3d11_shutdown();
+		glutLeaveMainLoop();
+	};
 
-	rm.cleanup();
-	sg_shutdown();
-	d3d11_shutdown();
+	std::thread sokolThread(sokolFunc);
+
+	GlutManager& glutMngr = GlutManager::getInstance();
+	glutMngr.EnterMainLoop();
+
+	keepRunning = false;
+	
+
+	sokolThread.join();
+
 	return 0;
 }

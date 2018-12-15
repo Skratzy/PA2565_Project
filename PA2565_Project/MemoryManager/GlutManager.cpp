@@ -4,6 +4,8 @@
 #include "GlutIncludes.h"
 #include "RenderFunctions.h"
 
+#include <functional>
+
 GlutManager& asdf = GlutManager::getInstance();
 GlutManager* ptr = &asdf;
 
@@ -55,8 +57,15 @@ GlutManager::~GlutManager()
 
 void GlutManager::EnterMainLoop()
 {
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	// Enter the mainloop
 	glutMainLoop();
+	PostQuitMessage(0);
+}
+
+void GlutManager::LeaveMainLoop()
+{
+	glutLeaveMainLoop();
 }
 
 std::vector<std::vector<std::vector<bool>>> GlutManager::getVectors()
@@ -105,14 +114,23 @@ void timerEvent(int t)
 	glutTimerFunc(10, timerEvent, 1);	// Call this function in 100ms.
 }
 
+void errorFunc(const char *fmt, va_list ap) {
+	printf(fmt, ap);
+	//std::cerr << "ERROR: " << fmt << std::endl;
+}
+
 void GlutManager::initialize(int argc, char **argv)
 {
 	// Init GLUT and create the window
 	glutInit(&argc, argv);		// - Initializes GLUT itself
+
+	glutInitErrorFunc(errorFunc);
+	glutInitWarningFunc(errorFunc);
 	glutInitWindowPosition(-1, -1);	// -1, -1 leaves the window position to the OS
 	glutInitWindowSize(600, 600);	//
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutCreateWindow("Render Window");
+
 
 	// register callbacks
 	glutDisplayFunc(renderScene);

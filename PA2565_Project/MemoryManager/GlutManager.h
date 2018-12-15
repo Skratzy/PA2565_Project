@@ -35,6 +35,7 @@ public:
 	}
 
 	void EnterMainLoop();
+	void LeaveMainLoop();
 	/*
 	Vector: Stacks, Pools
 		Vector: Number of stacks

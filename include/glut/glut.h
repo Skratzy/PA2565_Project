@@ -495,6 +495,9 @@ GLUTAPI void APIENTRY glutInitWindowPosition(int x, int y);
 GLUTAPI void APIENTRY glutInitWindowSize(int width, int height);
 GLUTAPI void APIENTRY glutMainLoop(void);
 
+// TESTING
+extern void APIENTRY glutMainLoopUpdate(void);
+
 /* GLUT window sub-API. */
 GLUTAPI int APIENTRY glutCreateWindow(const char *title);
 #if defined(_WIN32) && !defined(GLUT_DISABLE_ATEXIT_HACK)
