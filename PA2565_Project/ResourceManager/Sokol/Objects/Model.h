@@ -28,9 +28,14 @@ public:
 	void setMesh(MeshResource* mesh);
 	// Used for async callback
 	void setMeshNoDeref(Resource* mesh);
+	// Used for async callback
+	void setMeshCallback(Resource* mesh);
+
 	void setTexture(TextureResource* tex);
 	// Used for async callback
 	void setTexNoDeref(Resource* tex);
+	// Used for async callback
+	void setTexCallback(Resource* tex);
 
 	Transform& getTransform();
 

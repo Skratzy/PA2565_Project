@@ -119,22 +119,21 @@ void errorFunc(const char *fmt, va_list ap) {
 	//std::cerr << "ERROR: " << fmt << std::endl;
 }
 
+
 void GlutManager::initialize(int argc, char **argv)
 {
-	// Init GLUT and create the window
-	glutInit(&argc, argv);		// - Initializes GLUT itself
 
 	glutInitErrorFunc(errorFunc);
 	glutInitWarningFunc(errorFunc);
+
+	// Init GLUT and create the window
+	glutInit(&argc, argv);		// - Initializes GLUT itself
 	glutInitWindowPosition(-1, -1);	// -1, -1 leaves the window position to the OS
 	glutInitWindowSize(600, 600);	//
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutCreateWindow("Render Window");
-
-
 	// register callbacks
 	glutDisplayFunc(renderScene);
-
 	// See the definition of 'timerEvent' above
 	glutTimerFunc(10, timerEvent, 1);
 
