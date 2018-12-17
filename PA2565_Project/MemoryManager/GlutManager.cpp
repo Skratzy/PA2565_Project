@@ -22,6 +22,10 @@ void renderScene()
 	// Fetch stacks & pools
 	std::vector<std::vector<std::vector<bool>>> stacksAndPools = ptr->getVectors();
 	std::vector<std::vector<bool>> loadingAndAsync = ptr->getLoadingVectors();
+	std::vector<std::vector<bool>> loading;
+	std::vector<std::vector<bool>> async;
+	loading.push_back(loadingAndAsync.at(0));
+	async.push_back(loadingAndAsync.at(1));
 
 	// Render stacks
 	GLfloat stackEntryColor[] = { 0.0f, 1.0f, 0.0f };
@@ -33,7 +37,11 @@ void renderScene()
 
 	// Render loading
 	GLfloat loadingEntryColor[] = { 1.0f, 1.0f, 0.0f };
-	renderVector(loadingAndAsync, loadingEntryColor, renderedBarCount);
+	renderVector(loading, loadingEntryColor, renderedBarCount);
+
+	// Render async
+	GLfloat asyncEntryColor[] = { 1.0f, 1.0f, 0.5f };
+	renderVector(async, asyncEntryColor, renderedBarCount);
 	
 	delete renderedBarCount;
 

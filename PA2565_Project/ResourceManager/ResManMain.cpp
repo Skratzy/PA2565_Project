@@ -168,9 +168,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	// Load the async temp mesh and texture
 	std::string tempMeshPath = "Assets/meshes/tempOBJRes.obj";
-	auto tempMesh = ResourceManager::getInstance().load(tempMeshPath.c_str());
+	auto tempMesh = ResourceManager::getInstance().load(tempMeshPath.c_str(), false);
 	std::string tempTexPath = "Assets/textures/tempJPGRes.jpg";
-	auto tempTex = ResourceManager::getInstance().load(tempTexPath.c_str());
+	auto tempTex = ResourceManager::getInstance().load(tempTexPath.c_str(), false);
 
 	sg_draw_state drawState{ 0 };
 	drawState.pipeline = pip;

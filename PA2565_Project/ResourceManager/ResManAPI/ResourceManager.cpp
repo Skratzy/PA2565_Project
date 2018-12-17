@@ -41,7 +41,6 @@ void ResourceManager::asyncLoadStart()
 				m_asyncResJobs.erase(currJob);
 				critLock.unlock();
 			}
-			std::cout << "Finished Async Loading" << std::endl;
 		}
 		lock.unlock();
 	}
@@ -92,11 +91,19 @@ void ResourceManager::init(const unsigned int capacity) {
 
 Resource * ResourceManager::load(const char* path, bool isAsync)
 {
-	GlutManager glut = GlutManager::getInstance();
+	GlutManager& glut = GlutManager::getInstance();
 
 	Resource* res = nullptr;
 	namespace fs = std::experimental::filesystem;
 	long hashedPath = m_pathHasher(path);
+
+	// Update glut depending on if it's loading/async
+	if (isAsync) {
+		glut.updateAsyncVector();
+	}
+	else {
+		glut.updateLoadingVector();
+	}
 
 	// Check if the resource already exists in the system
 	auto it = m_resources.find(hashedPath);
@@ -128,13 +135,6 @@ Resource * ResourceManager::load(const char* path, bool isAsync)
 				if (FL->extensionSupported(ext)) {
 
 					// Load the resource and return it
-					if (isAsync) {
-						glut.updateAsyncVector();
-					}
-					else {
-						glut.updateLoadingVector();
-					}
-					
 					res = FL->load(path, hashedPath);
 
 					// Update memory usage
@@ -153,13 +153,20 @@ Resource * ResourceManager::load(const char* path, bool isAsync)
 					res->refer();
 					// Add the loaded resource to the map
 					m_resources.emplace(hashedPath, res);
+
 				}
 			}
 		}
 	}
 
-	glut.cleanLoadingVector();
-	glut.cleanAsyncVector();
+	if (isAsync) {
+		std::cout << "Finished Async Loading" << std::endl;
+		glut.cleanAsyncVector();
+	}
+	else {
+		glut.cleanLoadingVector();
+	}
+
 	return res;
 }
 
