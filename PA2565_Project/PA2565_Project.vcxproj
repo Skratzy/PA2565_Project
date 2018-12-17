@@ -80,7 +80,6 @@
     <ClCompile Include="MemoryManager\PoolAllocator.cpp" />
     <ClCompile Include="MemoryManager\RenderFunctions.cpp" />
     <ClCompile Include="MemoryManager\StackAllocator.cpp" />
-    <ClCompile Include="MemoryManager\TestCases.cpp" />
     <ClCompile Include="ResourceManager\ResManAPI\FormatLoaders\FormatLoader.cpp" />
     <ClCompile Include="ResourceManager\ResManAPI\FormatLoaders\JPGLoader.cpp" />
     <ClCompile Include="ResourceManager\ResManAPI\FormatLoaders\LodePNG.cpp" />
@@ -105,7 +104,6 @@
     <ClInclude Include="MemoryManager\PoolAllocator.h" />
     <ClInclude Include="MemoryManager\RenderFunctions.h" />
     <ClInclude Include="MemoryManager\StackAllocator.h" />
-    <ClInclude Include="MemoryManager\TestCases.h" />
     <ClInclude Include="ResourceManager\Defines.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\CImg.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\FormatLoader.h" />

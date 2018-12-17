@@ -17,7 +17,7 @@ void ResourceManager::asyncLoadStart()
 			m_cond.wait(lock);
 
 		// Critical region
-		if (m_asyncResJobs.size() > 0) {
+		if (m_asyncResJobs.size() > 0 && m_running) {
 			// Get the GUID for the next resource job
 			long GUID = m_asyncJobQueue.front();
 			m_asyncJobQueue.pop();

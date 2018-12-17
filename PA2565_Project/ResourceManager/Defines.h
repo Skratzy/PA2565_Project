@@ -7,11 +7,29 @@
 #include <new>
 #include <windows.h>
 
+#include "../MemoryManager/MemoryManager.h"
+
 #define RM_ASSERT(s) assert(s)
 /*
 	s: Size in bytes
 */
 #define RM_MALLOC(s) malloc(s)
+/*
+	s: Size in bytes
+*/
+#define RM_MALLOC_POOL_ALLOC(s)
+constexpr auto SINGLE_FRAME_STACK_INDEX = 0;
+constexpr auto PERSISTENT_STACK_INDEX = 1;
+/*
+	Allocates memory for a single frame
+	s: Size in bytes
+*/
+#define RM_MALLOC_SINGLE_FRAME(s) MemoryManager::getInstance().stackAllocate(s, SINGLE_FRAME_STACK_INDEX)
+/*
+	Allocates memory from the persistent stack allocator
+	s: Size in bytes
+*/
+#define RM_MALLOC_PERSISTENT(s) MemoryManager::getInstance().stackAllocate(s, PERSISTENT_STACK_INDEX)
 /*
 	TYPE: Type
 */

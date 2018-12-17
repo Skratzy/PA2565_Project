@@ -35,6 +35,7 @@ extern "C" {
 
 #include "../MemoryManager/GlutManager.h"
 #include "GL/freeglut.h"
+#include "../MemoryManager/MemoryManager.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 	// Check for memory leaks
@@ -139,7 +140,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	rm.registerFormatLoader(RM_NEW(OBJLoader));
 	rm.registerFormatLoader(RM_NEW(RMMeshLoader));
 	rm.registerFormatLoader(RM_NEW(RMTextureLoader));
-
 
 	sg_draw_state drawState{ 0 };
 	drawState.pipeline = pip;

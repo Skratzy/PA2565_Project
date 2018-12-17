@@ -1,5 +1,7 @@
 #include "MemoryManager.h"
 
+#include "../ResourceManager/Defines.h"
+
 #include <string>
 
 /*+-+-+-+-+-+-+-+-+-+-+-+
@@ -11,16 +13,21 @@ void* MemoryManager::getMem(unsigned int sizeBytes)
 	return calloc(1, sizeBytes);
 }
 
-void MemoryManager::addPool(unsigned int sizeBytesEachEntry, unsigned int numEntries, unsigned int numQuadrants)
+void MemoryManager::addPool(PoolInstance instance)
 {
-	PoolAllocator* temp = new PoolAllocator(getMem(sizeBytesEachEntry * numEntries), sizeBytesEachEntry, numEntries, numQuadrants);
+	PoolAllocator* temp = new PoolAllocator(
+		getMem(instance.sizeBytesEachEntry * instance.numEntries), 
+		instance.sizeBytesEachEntry, 
+		instance.numEntries, 
+		instance.numQuadrants
+	);
 	std::vector<PoolAllocator*>::iterator it = m_pools.begin();
 	int pos = 0;
 	bool largerFound = false;
 
 	// Check for pools with entires larger than the one being added
 	for (it; it != m_pools.end(); it++) {
-		if (sizeBytesEachEntry < (*it)->getEntrySize()) {
+		if (instance.sizeBytesEachEntry < (*it)->getEntrySize()) {
 			// If found a pool with larger entries, insert the new pool before the larger pool
 			m_pools.insert(it, temp);
 			largerFound = true;
@@ -33,14 +40,9 @@ void MemoryManager::addPool(unsigned int sizeBytesEachEntry, unsigned int numEnt
 	}
 }
 
-void MemoryManager::addStack(unsigned int sizeBytes)
+void MemoryManager::addStack(StackInstance instance)
 {
-	if (m_stack == nullptr)
-		m_stack = new StackAllocator(getMem(sizeBytes), sizeBytes);
-	else
-		throw std::exception("MemoryManager::addStack : Stack already created");
-
-
+	m_stacks.push_back(new StackAllocator(getMem(instance.sizeBytes), instance.sizeBytes));
 }
 
 
@@ -53,34 +55,48 @@ void MemoryManager::addStack(unsigned int sizeBytes)
 
 MemoryManager::MemoryManager()
 {
-	m_stack = nullptr;
 }
 MemoryManager::~MemoryManager()
 {
 	cleanUp();
 }
 
-void MemoryManager::init(unsigned int stackSizeBytes, std::vector<PoolInstance> poolInstances)
+void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const std::vector<PoolInstance>& poolInstances)
 {
-	// Currently we only have one stack (single-frame stack)
-	addStack(stackSizeBytes);
-	// Creating 'vector<bool>' for memory tacking purposes
-	m_currMemUsage.stacks = m_stack->getUsedMemory();
-
 	int currIndex = 0;
+	for (auto SI : stackInstances) {
+		addStack(SI);
+		// Creating 'vector<bool>' for memory tacking purposes
+		m_currMemUsage.stacks.push_back(m_stacks.at(currIndex++)->getUsedMemory());
+	}
+
+	currIndex = 0;
 	// Initializing each 'PoolInstance' into an actual pool in the memory manager
 	for (PoolInstance PI : poolInstances) {
 		if (PI.numEntries % PI.numQuadrants != 0)
 			throw std::exception(("The number of entries in PoolInstance " + std::to_string(currIndex) + " was not divisible with the number of quadrants.").c_str());
 		// Inserting the pool into the 'm_pools' vector
-		addPool(PI.sizeBytesEachEntry, PI.numEntries, PI.numQuadrants);
+		addPool(PI);
 		// Creating 'vector<bool>' for memory tacking purposes
 		m_currMemUsage.pools.push_back(m_pools.at(currIndex++)->getUsedMemory());
 	}
 }
 
-void* MemoryManager::singleFrameAllocate(unsigned int sizeBytes) {
-	return m_stack->allocate(sizeBytes);
+void * MemoryManager::stackAllocate(unsigned int sizeBytes, unsigned int indexOfStack)
+{
+	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
+		RM_DEBUG_MESSAGE("MemoryManager::stackAllocate: Index was out of bounds.", 1);
+	
+	void* toReturn;
+	try {
+		toReturn = m_stacks[indexOfStack]->allocate(sizeBytes);
+		return toReturn;
+	}
+	catch (std::exception& e) {
+		RM_DEBUG_MESSAGE("MemoryManager::stackAllocate: " + std::string(e.what()), 1);
+		abort();
+	}
+
 }
 
 void* MemoryManager::poolAllocate(unsigned int sizeBytes) {
@@ -113,18 +129,40 @@ void MemoryManager::deallocateAllPools()
 		m_pools.at(i)->deallocateAll();
 }
 
-void MemoryManager::deallocateSingleFrameStack() {
-	m_stack->deallocateAll();
+void MemoryManager::deallocateStack(unsigned int indexOfStack)
+{
+	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
+		RM_DEBUG_MESSAGE("MemoryManager::deallocateStack: Index was out of bounds.", 1);
+
+	m_stacks[indexOfStack]->deallocateAll();
+}
+
+void MemoryManager::deallocateStack(unsigned int indexOfStack, Marker toMarker)
+{
+	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
+		RM_DEBUG_MESSAGE("MemoryManager::deallocateStack: Index was out of bounds.", 1);
+
+	m_stacks[indexOfStack]->clearToMarker(toMarker);
+}
+
+Marker MemoryManager::getStackMarker(unsigned int indexOfStack)
+{
+	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
+		RM_DEBUG_MESSAGE("MemoryManager::getStackMarker: Index was out of bounds.", 1);
+
+	return m_stacks[indexOfStack]->getMarker();
 }
 
 void MemoryManager::updateAllocatedSpace()
 {
-	// Updates the 'vector<bool>' for the SF-stack for GLUT (used to visualize memory consumption)
-	m_currMemUsage.stacks = m_stack->getUsedMemory();
+	for (unsigned int i = 0; i < m_stacks.size(); i++) {
+		// Updates multiple 'vector<bool>' for the SF-stack for GLUT (used to visualize memory consumption)
+		m_currMemUsage.stacks[i] = m_stacks[i]->getUsedMemory();
+	}
 
 	for (unsigned int i = 0; i < m_pools.size(); i++) {
-		// Updates the multiple 'vector<bool>' for GLUT (used to visualize memory consumption)
-		m_currMemUsage.pools.at(i) = m_pools.at(i)->getUsedMemory();
+		// Updates multiple 'vector<bool>' for GLUT (used to visualize memory consumption)
+		m_currMemUsage.pools[i] = m_pools.at(i)->getUsedMemory();
 	}
 }
 
@@ -144,8 +182,11 @@ void MemoryManager::cleanUp()
 	m_pools.clear();
 	m_pools.resize(0);
 
-	delete m_stack;
-	m_stack = nullptr;
+	for (unsigned int i = 0; i < m_pools.size(); i++)
+		if(m_stacks[i] != nullptr)
+			delete m_stacks[i];
+	m_stacks.clear();
+	m_stacks.resize(0);
 
 	m_currMemUsage.pools.clear();
 	m_currMemUsage.stacks.clear();

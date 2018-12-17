@@ -10,7 +10,7 @@
 // DEFINITIONS
 // --------------------------------------
 struct MemoryUsage { // All vectors of bools are visually depicted by GLUT
-	std::vector<bool> stacks;
+	std::vector<std::vector<bool>> stacks;
 	std::vector<std::vector<bool>> pools;
 };
 
@@ -19,13 +19,18 @@ struct PoolInstance {
 	unsigned int numEntries;
 	unsigned int numQuadrants;
 };
+
+struct StackInstance {
+	unsigned int sizeBytes;
+};
+
 // ---------------------------------------
 
 class MemoryManager
 {
 private: /// VARIABLES
 	std::vector<PoolAllocator*> m_pools;
-	StackAllocator* m_stack;
+	std::vector<StackAllocator*> m_stacks;
 
 	MemoryUsage m_currMemUsage;
 
@@ -36,8 +41,8 @@ private: /// FUNCTIONS
 	MemoryManager(MemoryManager const&) = delete;
 	void operator=(MemoryManager const&) = delete;
 
-	void addPool(unsigned int sizeBytesEachEntry, unsigned int numEntries, unsigned int numQuadrants);
-	void addStack(unsigned int sizeBytes);
+	void addPool(PoolInstance instance);
+	void addStack(StackInstance instance);
 
 public: /// FUNCTIONS
 
@@ -51,14 +56,17 @@ public: /// FUNCTIONS
 	MemoryManager();
 	~MemoryManager();
 
-	void init(unsigned int stackSizeBytes, std::vector<PoolInstance> poolInstances);
+	void init(const std::vector<StackInstance>& stackInstances, const std::vector<PoolInstance>& poolInstances);
 
-	void* singleFrameAllocate(unsigned int sizeBytes);
+	void* stackAllocate(unsigned int sizeBytes, unsigned int indexOfStack);
 	void* poolAllocate(unsigned int sizeBytes);
 
 	void deallocateSinglePool(void* ptr, unsigned int sizeOfAlloc);
 	void deallocateAllPools();
-	void deallocateSingleFrameStack();
+	void deallocateStack(unsigned int indexOfStack);
+	void deallocateStack(unsigned int indexOfStack, Marker toMarker);
+
+	Marker getStackMarker(unsigned int indexOfStack);
 
 	void updateAllocatedSpace();
 	MemoryUsage& getAllocatedSpace();
