@@ -25,10 +25,13 @@ Resource* PNGLoader::load(const char* path, const long GUID)
 		RM_DEBUG_MESSAGE(std::to_string(error) + lodepng_error_text(error) + " at filePath: " + path, 0);
 	}
 	else {
-		unsigned int size = sizeof(TextureResource) + sizeof(unsigned int) * image.size();
-		resource = new (RM_MALLOC(size)) TextureResource(width, height, image, GUID);
+		// Fix size (VRAM vs RAM)
+		unsigned int size = sizeof(TextureResource);// +sizeof(unsigned int) * image.size();
+		// Attach the formatted image to a textureresource
+		resource = new (RM_MALLOC_PERSISTENT(size)) TextureResource(width, height, image.data(), GUID);
 		resource->setSize(size);
 	}
+
 	if (loadZipped) {
 		// Deleting extracted file once loaded in to memory
 		std::experimental::filesystem::remove(filePath.c_str());

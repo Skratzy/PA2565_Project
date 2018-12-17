@@ -26,23 +26,30 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 	if (check < filePath.length()) {
 		loadZipped = true;
 	}
-	string width;
-	string height;
+	unsigned int width;
+	unsigned int height;
 	string lineData;
 	std::vector<unsigned char> imageData;
+	unsigned char* imageDataPtr;
 
 	string colourData[4];
 	enum COLOR { RED, BLUE, GREEN, ALPHA, COUNT };
 	unsigned int lineIndex = 0;
 
+	auto marker = MemoryManager::getInstance().getStackMarker(FUNCTION_STACK_INDEX);
+	unsigned int imageDataIndex = 0;
 	// Start the loading process with the correct filepath
 	if (!loadZipped) {
 		ifstream inputStream(path, std::ios_base::in | std::ios_base::binary);
 
+		std::string sWidth;
+		std::string sHeight;
+		getline(inputStream, sWidth);			// Load Width
+		getline(inputStream, sHeight);			// Load Height
+		width = std::stoi(sWidth);
+		height = std::stoi(sHeight);
 
-		getline(inputStream, width);			// Load Width
-		getline(inputStream, height);			// Load Height
-
+		imageDataPtr = new (RM_MALLOC_FUNCTION(sizeof(unsigned char) * width * height * 4)) unsigned char;
 
 	// Read the filestream one line at a time and input the data into
 	// the imageData
@@ -73,7 +80,8 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 			for (int currentColor = COLOR::RED; currentColor < COLOR::COUNT; currentColor++) {
 				int castedInt = std::stoi(colourData[currentColor]);
 				unsigned char castedChar = (unsigned char)castedInt;
-				imageData.push_back(castedChar);
+				//imageData.push_back(castedChar);
+				imageDataPtr[imageDataIndex++] = castedChar;
 
 				// ... and clear contents in preparation of next iteration
 				colourData[currentColor].clear();
@@ -88,10 +96,14 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 		std::stringstream inputStream;
 		inputStream << tempString;
 
+		std::string sWidth;
+		std::string sHeight;
+		getline(inputStream, sWidth);			// Load Width
+		getline(inputStream, sHeight);			// Load Height
+		width = std::stoi(sWidth);
+		height = std::stoi(sHeight);
 
-		getline(inputStream, width);			// Load Width
-		getline(inputStream, height);			// Load Height
-
+		imageDataPtr = new (RM_MALLOC_FUNCTION(sizeof(unsigned char) * width * height * 4)) unsigned char;
 
 		// Read the filestream one line at a time and input the data into
 		// the imageData
@@ -123,7 +135,8 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 			for (int currentColor = COLOR::RED; currentColor < COLOR::COUNT; currentColor++) {
 				int castedInt = std::stoi(colourData[currentColor]);
 				unsigned char castedChar = (unsigned char)castedInt;
-				imageData.push_back(castedChar);
+				//imageData.push_back(castedChar);
+				imageDataPtr[imageDataIndex++] = castedChar;
 
 				// ... and clear contents in preparation of next iteration
 				colourData[currentColor].clear();
@@ -132,15 +145,13 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 		free(ptr);
 	}
 
-	// Attach read data to resource
-	unsigned int size = sizeof(TextureResource) + sizeof(unsigned int) * imageData.size();
-	Resource* res = new (RM_MALLOC(size)) TextureResource(
-		std::stoi(width),	// int std::string_to_int(string)
-		std::stoi(height),	//
-		imageData,
-		GUID
-	);
+	// Fix size (VRAM vs RAM)
+	unsigned int size = sizeof(TextureResource);// +sizeof(unsigned int) * image.size();
+	// Attach the formatted image to a textureresource
+	Resource* res = new (RM_MALLOC_PERSISTENT(size)) TextureResource(width, height, imageDataPtr, GUID);
 	res->setSize(size);
+
+	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX, marker);
 	
 	// Return it out!
 	return res;

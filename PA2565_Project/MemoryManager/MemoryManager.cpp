@@ -182,7 +182,7 @@ void MemoryManager::cleanUp()
 	m_pools.clear();
 	m_pools.resize(0);
 
-	for (unsigned int i = 0; i < m_pools.size(); i++)
+	for (unsigned int i = 0; i < m_stacks.size(); i++)
 		if(m_stacks[i] != nullptr)
 			delete m_stacks[i];
 	m_stacks.clear();

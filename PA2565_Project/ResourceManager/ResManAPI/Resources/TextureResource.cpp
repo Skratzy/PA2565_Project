@@ -1,12 +1,12 @@
 #include "TextureResource.h"
 
-TextureResource::TextureResource(int width, int height, std::vector<unsigned char> image, const long GUID)
+TextureResource::TextureResource(unsigned int width, unsigned int height, unsigned char* image, const long GUID)
 	: Resource(GUID)
 {
 	sg_image_desc sgid{ 0 };
 	sg_image_content sgic{ 0 };
-	sgic.subimage[0][0].ptr = image.data();
-	sgic.subimage[0][0].size = image.size();
+	sgic.subimage[0][0].ptr = image;
+	sgic.subimage[0][0].size = width * height * 4 * sizeof(unsigned int);
 	sgid.width = width;
 	sgid.height = height;
 	sgid.pixel_format = SG_PIXELFORMAT_RGBA8;

@@ -63,8 +63,9 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	for (const auto& shape : shapes)
 		numIndices += shape.mesh.indices.size();
 
-	verticesDataPtr = new (RM_MALLOC(numIndices * 8 * sizeof(float))) float;
-	indicesPtr = new (RM_MALLOC(numIndices * sizeof(uint32_t))) uint32_t;
+	auto marker = MemoryManager::getInstance().getStackMarker(FUNCTION_STACK_INDEX);
+	verticesDataPtr = new (RM_MALLOC_FUNCTION(numIndices * 8 * sizeof(float))) float;
+	indicesPtr = new (RM_MALLOC_FUNCTION(numIndices * sizeof(uint32_t))) uint32_t;
 
 	unsigned int i = 0;
 	// Very inefficient way of drawing loading the meshes
@@ -106,12 +107,14 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	}
 
 	unsigned int sizeOnRAM = sizeof(MeshResource);
-	MeshResource* meshToBeReturned = new (RM_MALLOC(sizeOnRAM)) MeshResource(verticesDataPtr, indicesPtr, numIndices * 8, numIndices, GUID);
+	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRAM)) MeshResource(verticesDataPtr, indicesPtr, numIndices * 8, numIndices, GUID);
 	meshToBeReturned->setSize(sizeOnRAM);
 	/// ----------------------------------------------------
 
-	delete verticesDataPtr;
-	delete indicesPtr;
+	//delete verticesDataPtr;
+	//delete indicesPtr;
+	// ResourceManager::load() will never get here in more than one thread at a time
+	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX);
 
 	if (loadZipped) {
 		// Deleting extracted file once loaded in to memory

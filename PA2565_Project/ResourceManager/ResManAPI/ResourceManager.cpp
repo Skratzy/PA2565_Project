@@ -67,11 +67,17 @@ void ResourceManager::cleanup()
 {
 	m_running = false;
 	m_cond.notify_all();
-	for (auto FL : m_formatLoaders)
-		RM_DELETE(FL);
+	for (auto FL : m_formatLoaders) {
+		if (FL) {
+			delete FL;
+			FL = nullptr;
+		}
+	}
+	m_formatLoaders.clear();
+	m_formatLoaders.resize(0);
 	for (auto RES : m_resources) {
 		RES.second->~Resource();
-		RM_FREE(RES.second);
+		//RM_FREE(RES.second);
 	}
 	m_asyncLoadThread.join();
 }
@@ -208,7 +214,8 @@ void ResourceManager::decrementReference(long key)
 	{
 		m_memUsage -= m_resources.at(key)->getSize();
 		m_resources.at(key)->~Resource();
-		RM_FREE(m_resources.at(key));
+		// Should no longer be required
+		//RM_FREE(m_resources.at(key));
 		m_resources.erase(key);
 	}	
 }
