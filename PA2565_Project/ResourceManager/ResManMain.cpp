@@ -281,7 +281,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMTex
 	*/
-	models.push_back(RM_NEW_PERSISTENT(Model));
+	/*models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex")));
@@ -366,10 +366,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			/* draw frame */
 			sg_begin_default_pass(&pass_action, d3d11_width(), d3d11_height());
 
-			sunDir.rotateAroundX(0.3f);
-			vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
+			//sunDir.rotateAroundX(0.3f);
+			//vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
 
-			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(1000)) {
+			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(3000)) {
 				for (auto m : models)
 					m->~Model();
 				models.clear();
@@ -377,30 +377,29 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 				models.push_back(RM_NEW_PERSISTENT(Model));
 				models.back()->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
-
+				rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+				rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 
 				models.push_back(RM_NEW_PERSISTENT(Model));
 				models.back()->getTransform().translate(HMM_Vec3(-10.f, -8.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+				rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
 				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 
 				models.push_back(RM_NEW_PERSISTENT(Model));
 				models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
+				rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+				rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 
 				models.push_back(RM_NEW_PERSISTENT(Model));
 				models.back()->getTransform().translate(HMM_Vec3(0.f, -17.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+				rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
 				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 
 				startTime = std::chrono::high_resolution_clock::now();
 			}
 			float index = 0.1f;
 			for (auto model : models) {
-				//model->getTransform().rotateAroundY(5.f);
+				model->getTransform().rotateAroundY(std::rand() % 10);
 				model->draw(drawState, vsParams);
 			}
 
