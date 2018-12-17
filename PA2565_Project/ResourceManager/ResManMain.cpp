@@ -133,7 +133,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	// Initialize the resource manager and register the format loaders to it
 	ResourceManager &rm = ResourceManager::getInstance();
-	rm.init(1024 * 2000);
+	rm.init(1024 * 500000);
 	rm.registerFormatLoader(RM_NEW(PNGLoader));
 	rm.registerFormatLoader(RM_NEW(JPGLoader));
 	rm.registerFormatLoader(RM_NEW(OBJLoader));
@@ -171,7 +171,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* OBJ
 	*/
-	/*models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW(Model));
 	auto start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
@@ -193,7 +193,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMMesh
 	*/
-	/*models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh")));
@@ -215,7 +215,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* PNG
 	*/
-	/*models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
@@ -237,7 +237,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* JPG
 	*/
-	/*models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
@@ -259,7 +259,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMTex
 	*/
-	/*models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex")));
@@ -282,7 +282,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	*	Thread-safety
 	*/
 	// Test thread-safety on normal loading
-	std::atomic_int aInt = 0;
+	/*std::atomic_int aInt = 0;
 	int numPtrs = 2;
 	std::vector<Resource*> resPtrs(numPtrs);
 	auto threadFunc = [&rm, &aInt, &resPtrs](const char* path) {

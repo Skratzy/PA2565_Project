@@ -14,8 +14,8 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 	/// ----------------------------------------
 	int numberOfVertices;
 	int numberOfIndices;
-	std::vector<float> verticesData;
-	std::vector<uint32_t> indices;
+	float* verticesDataPtr;
+	uint32_t* indicesPtr;
 	/// ----------------------------------------
 
 	//Check if asset is in package
@@ -44,18 +44,19 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		std::getline(inputFile, tempString);
 		numberOfIndices = std::stoi(tempString);
 
-		verticesData.resize(numberOfVertices * 8);
-		for (int i = 0; i < verticesData.size(); i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
+		//verticesData.resize(numberOfVertices * 8);
+		verticesDataPtr = new (RM_MALLOC(numberOfVertices * 8 * sizeof(float))) float;
+		for (int i = 0; i < numberOfVertices; i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
 		{
 			std::getline(inputFile, tempString, ',');
-			verticesData.at(i) = std::stof(tempString);
+			verticesDataPtr[i] = std::stof(tempString);
 		}
 
-		indices.resize(numberOfIndices);
-		for (int i = 0; i < indices.size(); i++)
+		indicesPtr = new (RM_MALLOC(numberOfIndices * sizeof(uint32_t))) uint32_t;
+		for (int i = 0; i < numberOfIndices; i++)
 		{
 			std::getline(inputFile, tempString, ',');
-			indices.at(i) = std::stoi(tempString);
+			indicesPtr[i] = static_cast<uint32_t>(std::stoi(tempString));
 		}
 	}
 	else {
@@ -70,26 +71,29 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		std::getline(inputFile, tempString);
 		numberOfIndices = std::stoi(tempString);
 
-		verticesData.resize(numberOfVertices * 8);
-		for (int i = 0; i < verticesData.size(); i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
+		verticesDataPtr = new (RM_MALLOC(numberOfVertices * sizeof(float))) float;
+		for (int i = 0; i < numberOfVertices; i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
 		{
 			std::getline(inputFile, tempString, ',');
-			verticesData.at(i) = std::stof(tempString);
+			verticesDataPtr[i] = std::stof(tempString);
 		}
 
-		indices.resize(numberOfIndices);
-		for (int i = 0; i < indices.size(); i++)
+		indicesPtr = new (RM_MALLOC(numberOfIndices * sizeof(uint32_t))) uint32_t;
+		for (int i = 0; i < numberOfIndices; i++)
 		{
 			std::getline(inputFile, tempString, ',');
-			indices.at(i) = std::stoi(tempString);
+			indicesPtr[i] = static_cast<uint32_t>(std::stoi(tempString));
 		}
 		free(ptr);
 	}
 
 
-	unsigned int size = sizeof(MeshResource) + verticesData.size() * sizeof(float) + indices.size() * sizeof(unsigned int);
-	MeshResource* meshToBeReturned = new (RM_MALLOC(size)) MeshResource(verticesData, indices, GUID);
-	meshToBeReturned->setSize(size);
+	unsigned int sizeOnRam = sizeof(MeshResource);
+	MeshResource* meshToBeReturned = new (RM_MALLOC(sizeOnRam)) MeshResource(verticesDataPtr, indicesPtr, numberOfVertices, numberOfIndices, GUID);
+	meshToBeReturned->setSize(sizeOnRam);
+
+	delete verticesDataPtr;
+	delete indicesPtr;
 
 	/// ----------------------------------------------------
 	return meshToBeReturned;

@@ -14,7 +14,7 @@ private:
 	unsigned int m_indexCount;
 
 public:
-	MeshResource(std::vector<float>& vertices, std::vector<unsigned int>& indices, const long GUID);
+	MeshResource(float* vertices, uint32_t* indices, unsigned int numVertices, unsigned int numIndices, const long GUID);
 	virtual ~MeshResource();
 
 	std::vector<unsigned int> indices;

@@ -56,48 +56,62 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	if (attrib.texcoords.size() < 1)
 		RM_DEBUG_MESSAGE("Couldn't find any vertex UVs in " + std::string(path), 0);
 
-	std::vector<uint32_t> indices;
-	std::vector<float> verticesData;
+	uint32_t* indicesPtr;
+	float* verticesDataPtr;
+	
+	unsigned int numIndices = 0;
+	for (const auto& shape : shapes)
+		numIndices += shape.mesh.indices.size();
+
+	verticesDataPtr = new (RM_MALLOC(numIndices * 8 * sizeof(float))) float;
+	indicesPtr = new (RM_MALLOC(numIndices * sizeof(uint32_t))) uint32_t;
+
+	unsigned int i = 0;
 	// Very inefficient way of drawing loading the meshes
 	for (const auto& shape : shapes) // PER SHAPE
 	{
 		for (const auto& index : shape.mesh.indices) // PER INDEX (per shape)
 		{
 			// Vertex Index
-			indices.push_back(indices.size());
+			indicesPtr[i] = i;
 			
-			verticesData.push_back(attrib.vertices[3 * index.vertex_index + 0]);
-			verticesData.push_back(attrib.vertices[3 * index.vertex_index + 1]);
-			verticesData.push_back(attrib.vertices[3 * index.vertex_index + 2]);
-			
+			verticesDataPtr[i * 8 + 0] = (attrib.vertices[3 * index.vertex_index + 0]);
+			verticesDataPtr[i * 8 + 1] = (attrib.vertices[3 * index.vertex_index + 1]);
+			verticesDataPtr[i * 8 + 2] = (attrib.vertices[3 * index.vertex_index + 2]);
+
 			// Check if there's normals data in file, else use faux data (Should calculate normals)
 			if (attrib.normals.size() > 0) {
-				verticesData.push_back(attrib.normals[3 * index.normal_index + 0]);
-				verticesData.push_back(attrib.normals[3 * index.normal_index + 1]);
-				verticesData.push_back(attrib.normals[3 * index.normal_index + 2]);
+				verticesDataPtr[i * 8 + 3] = (attrib.normals[3 * index.normal_index + 0]);
+				verticesDataPtr[i * 8 + 4] = (attrib.normals[3 * index.normal_index + 1]);
+				verticesDataPtr[i * 8 + 5] = (attrib.normals[3 * index.normal_index + 2]);
 			}
 			else {
-				verticesData.push_back(1.f);
-				verticesData.push_back(1.f);
-				verticesData.push_back(0.f);
+				verticesDataPtr[i * 8 + 3] = (1.f);
+				verticesDataPtr[i * 8 + 4] = (1.f);
+				verticesDataPtr[i * 8 + 5] = (0.f);
 			}
 
 			// Check if there's texCoord data in file, else use faux data
 			if (attrib.texcoords.size() > 0) {
-				verticesData.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-				verticesData.push_back(1.f - attrib.texcoords[2 * index.texcoord_index + 1]);
+				verticesDataPtr[i * 8 + 6] = (attrib.texcoords[2 * index.texcoord_index + 0]);
+				verticesDataPtr[i * 8 + 7] = (1.f - attrib.texcoords[2 * index.texcoord_index + 1]);
 			}
 			else {
-				verticesData.push_back(0.f);
-				verticesData.push_back(0.f);				
+				verticesDataPtr[i * 8 + 6] = (0.f);
+				verticesDataPtr[i * 8 + 7] = (0.f);
 			}
+
+			i++;
 		}
 	}
 
-	unsigned int size = sizeof(MeshResource) + verticesData.size() * sizeof(float) + indices.size() * sizeof(unsigned int);
-	MeshResource* meshToBeReturned = new (RM_MALLOC(size)) MeshResource(verticesData, indices, GUID);
-	meshToBeReturned->setSize(size);
+	unsigned int sizeOnRAM = sizeof(MeshResource);
+	MeshResource* meshToBeReturned = new (RM_MALLOC(sizeOnRAM)) MeshResource(verticesDataPtr, indicesPtr, numIndices * 8, numIndices, GUID);
+	meshToBeReturned->setSize(sizeOnRAM);
 	/// ----------------------------------------------------
+
+	delete verticesDataPtr;
+	delete indicesPtr;
 
 	if (loadZipped) {
 		// Deleting extracted file once loaded in to memory

@@ -1,23 +1,23 @@
 #include "MeshResource.h"
 
-MeshResource::MeshResource(std::vector<float>& vertices, std::vector<unsigned int>& indices, const long GUID)
+MeshResource::MeshResource(float* vertices, uint32_t* indices, unsigned int numVertices, unsigned int numIndices, const long GUID)
 	: Resource(GUID)
 {
 	// Build vertex buffer
 	sg_buffer_desc sgVbd{ 0 };
 	sgVbd.type = SG_BUFFERTYPE_VERTEXBUFFER;
-	m_vertexCount = vertices.size();
+	m_vertexCount = numVertices;
 	sgVbd.size = m_vertexCount * sizeof(float);
-	sgVbd.content = vertices.data();
+	sgVbd.content = vertices;
 	m_vertexBuffer = sg_make_buffer(&sgVbd);
 
 
 	// Build index buffer
 	sg_buffer_desc sgIbd{ 0 };
 	sgIbd.type = SG_BUFFERTYPE_INDEXBUFFER;
-	m_indexCount = indices.size();
+	m_indexCount = numIndices;
 	sgIbd.size = m_indexCount * sizeof(unsigned int);
-	sgIbd.content = indices.data();
+	sgIbd.content = indices;
 	m_indexBuffer = sg_make_buffer(&sgIbd);
 }
 
