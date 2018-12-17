@@ -24,6 +24,9 @@ private:
 	std::vector<std::vector<bool>> createFauxTestData();
 	std::vector<std::vector<bool>> m_stacks;
 	std::vector<std::vector<bool>> m_pools;
+	std::vector<bool> m_loadingStack;
+	std::vector<bool> m_asyncStack;
+
 
 public:
 	GlutManager();
@@ -47,4 +50,10 @@ public:
 	void updateVectors(std::vector<std::vector<bool>>& stacks, std::vector<std::vector<bool>>& pools);
 	void addStack(std::vector<bool> stack);
 	void addPool(std::vector<bool> pool);
+
+	std::vector<std::vector<bool>> getLoadingVectors();
+	void updateLoadingVector();
+	void cleanLoadingVector();
+	void updateAsyncVector();
+	void cleanAsyncVector();
 };

@@ -174,7 +174,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	auto start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
-	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
+	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	auto timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	std::string debugMsg = std::string("Loading of teapot.obj took: " + std::to_string(timeTaken) + "ms.");
@@ -183,7 +183,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ in Zip loading test
-	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.obj")));
+	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.obj", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of teapot.obj from zip took: " + std::to_string(timeTaken) + "ms.");
@@ -196,7 +196,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh Loading test
-	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh")));
+	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of teapot.RMMesh took: " + std::to_string(timeTaken) + "ms.");
@@ -205,7 +205,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh in Zip loading test
-	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.rmmesh")));
+	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.rmmesh", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of teapot.RMMesh from zip took: " + std::to_string(timeTaken) + "ms.");
@@ -218,7 +218,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG Loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage.png took: " + std::to_string(timeTaken) + "ms.");
@@ -227,7 +227,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG in Zip loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage.png")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage.png", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage.png from zip took: " + std::to_string(timeTaken) + "ms.");
@@ -240,7 +240,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG Loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.jpg took: " + std::to_string(timeTaken) + "ms.");
@@ -249,7 +249,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG in Zip loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.jpg")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.jpg", false)));
 	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.jpg from zip took: " + std::to_string(timeTaken) + "ms.");
@@ -262,7 +262,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex", false)));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.rmtex took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
@@ -270,7 +270,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	models.push_back(RM_NEW(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ in Zip loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex")));
+	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex", false)));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.rmtex from zip took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
@@ -332,6 +332,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	*/
 
 
+
 	bool keepRunning = true;
 	
 	auto sokolFunc = [&camEye, &vsParams, &camCenter, &camUp, &proj, &pass_action, &sunDir, &sunDirVec, &models, &rm, &drawState, &keepRunning]() {
@@ -364,23 +365,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 					auto rndVal = std::rand() % 100;
 
 					if (rndVal < 10) {
-						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals.obj")));
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals.obj", false)));
 					}
 					else if (rndVal < 50) {
-						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj", false)));
 					}
 					else {
-						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals-test.obj")));
+						model->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/cow-normals-test.obj", false)));
 					}
 
 					if (rndVal < 30) {
-						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg", false)));
 					}
 					else if (rndVal < 50) {
-						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png", false)));
 					}
 					else {
-						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testFile.png")));
+						model->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testFile.png", false)));
 					}
 				}
 			}
@@ -400,7 +401,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		sg_shutdown();
 		d3d11_shutdown();
 		glutLeaveMainLoop();
-		//glutMainLoopEvent();
 	};
 
 	std::thread sokolThread(sokolFunc);

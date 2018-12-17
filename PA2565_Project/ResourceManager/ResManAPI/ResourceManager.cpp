@@ -7,6 +7,7 @@
 #include "FormatLoaders/FormatLoader.h"
 #include <fstream>
 #include <ziplib/zip.h>
+#include "../PA2565_Project/MemoryManager/GlutManager.h"
 
 // Only a single thread will ever run this function
 void ResourceManager::asyncLoadStart()
@@ -18,12 +19,14 @@ void ResourceManager::asyncLoadStart()
 
 		// Critical region
 		if (m_asyncResJobs.size() > 0 && m_running) {
+
+			std::cout << "Started Async Loading" << std::endl;
 			// Get the GUID for the next resource job
 			long GUID = m_asyncJobQueue.front();
 			m_asyncJobQueue.pop();
 			// Find the job
 			auto currJob = m_asyncResJobs.find(GUID);
-			Resource* res = load(currJob->second.filepath);
+			Resource* res = load(currJob->second.filepath, true);
 			{
 				std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
 				// Runs through all callbacks for the current job
@@ -38,6 +41,7 @@ void ResourceManager::asyncLoadStart()
 				m_asyncResJobs.erase(currJob);
 				critLock.unlock();
 			}
+			std::cout << "Finished Async Loading" << std::endl;
 		}
 		lock.unlock();
 	}
@@ -80,8 +84,10 @@ void ResourceManager::init(const unsigned int capacity) {
 	}
 }
 
-Resource * ResourceManager::load(const char* path)
+Resource * ResourceManager::load(const char* path, bool isAsync)
 {
+	GlutManager glut = GlutManager::getInstance();
+
 	Resource* res = nullptr;
 	namespace fs = std::experimental::filesystem;
 	long hashedPath = m_pathHasher(path);
@@ -114,8 +120,17 @@ Resource * ResourceManager::load(const char* path)
 			for (auto FL : m_formatLoaders) {
 				// Check if the format loader supports the extension
 				if (FL->extensionSupported(ext)) {
+
 					// Load the resource and return it
+					if (isAsync) {
+						glut.updateAsyncVector();
+					}
+					else {
+						glut.updateLoadingVector();
+					}
+					
 					res = FL->load(path, hashedPath);
+
 					// Update memory usage
 					m_memUsage += res->getSize();
 					if (m_memUsage > m_capacity) {
@@ -137,8 +152,9 @@ Resource * ResourceManager::load(const char* path)
 		}
 	}
 
+	glut.cleanLoadingVector();
+	glut.cleanAsyncVector();
 	return res;
-	
 }
 
 void ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)> callback)

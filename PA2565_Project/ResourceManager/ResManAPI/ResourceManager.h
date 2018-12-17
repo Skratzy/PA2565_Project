@@ -24,7 +24,7 @@ private:
 	unsigned int m_capacity;
 	unsigned int m_memUsage;
 	
-	std::mutex m_mutex;
+	std::mutex m_mutex; 
 	
 	std::hash<std::string> m_pathHasher;
 	
@@ -62,7 +62,7 @@ public:
 
 	void init(const unsigned int capacity);
 
-	Resource* load(const char* path);
+	Resource* load(const char* path, bool isAsync);
 	void asyncLoad(const char* path, std::function<void(Resource*)> callback);
 
 	void decrementReference(long key);

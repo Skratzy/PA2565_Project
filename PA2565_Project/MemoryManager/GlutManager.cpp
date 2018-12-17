@@ -19,17 +19,22 @@ void renderScene()
 	int* renderedBarCount = new int(0);
 	std::vector<std::vector<bool>> vectors = createFauxTestData();
 
-	// Render vectors 
+	// Fetch stacks & pools
 	std::vector<std::vector<std::vector<bool>>> stacksAndPools = ptr->getVectors();
-	std::vector<std::vector<bool>> stacks = stacksAndPools.at(0);
-	std::vector<std::vector<bool>> pools = stacksAndPools.at(1);
+	std::vector<std::vector<bool>> loadingAndAsync = ptr->getLoadingVectors();
 
+	// Render stacks
 	GLfloat stackEntryColor[] = { 0.0f, 1.0f, 0.0f };
-	renderVector(stacks, stackEntryColor, renderedBarCount);
+	renderVector(stacksAndPools.at(0), stackEntryColor, renderedBarCount);
 
+	// Render pools
 	GLfloat poolEntryColor[] = { 0.0f, 0.0f, 1.0f };
-	renderVector(pools, poolEntryColor, renderedBarCount);
+	renderVector(stacksAndPools.at(1), poolEntryColor, renderedBarCount);
 
+	// Render loading
+	GLfloat loadingEntryColor[] = { 1.0f, 1.0f, 0.0f };
+	renderVector(loadingAndAsync, loadingEntryColor, renderedBarCount);
+	
 	delete renderedBarCount;
 
 	//frameCount++;
@@ -74,6 +79,35 @@ std::vector<std::vector<std::vector<bool>>> GlutManager::getVectors()
 	stacksAndPools.push_back(m_stacks);
 	stacksAndPools.push_back(m_pools);
 	return stacksAndPools;
+}
+
+std::vector<std::vector<bool>> GlutManager::getLoadingVectors()
+{
+	std::vector<std::vector<bool>> loadingAndAsync;
+	loadingAndAsync.push_back(m_loadingStack);
+	loadingAndAsync.push_back(m_asyncStack);
+	return loadingAndAsync;
+}
+
+void GlutManager::updateLoadingVector()
+{
+	this->m_loadingStack.push_back(true);
+}
+
+void GlutManager::updateAsyncVector()
+{
+	this->m_asyncStack.push_back(true);
+}
+
+
+void GlutManager::cleanLoadingVector()
+{
+	this->m_loadingStack.pop_back();
+}
+
+void GlutManager::cleanAsyncVector()
+{
+	this->m_asyncStack.pop_back();
 }
 
 void GlutManager::updateVectors(std::vector<std::vector<bool>>& stacks, std::vector<std::vector<bool>>& pools)
@@ -140,6 +174,8 @@ void GlutManager::initialize(int argc, char **argv)
 	// Fill vectors with testData so that it's visible if we haven't done anything
 	m_stacks = createFauxTestData();
 	m_pools = createFauxTestData();
+	m_loadingStack.resize(0);
+	m_asyncStack.resize(0);
 }
 
 std::vector<std::vector<bool>> GlutManager::createFauxTestData()
