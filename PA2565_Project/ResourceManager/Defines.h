@@ -20,6 +20,8 @@
 #define RM_MALLOC_POOL_ALLOC(s)
 constexpr auto SINGLE_FRAME_STACK_INDEX = 0;
 constexpr auto PERSISTENT_STACK_INDEX = 1;
+constexpr auto FUNCTION_STACK_INDEX = 2;
+
 /*
 	Allocates memory for a single frame
 	s: Size in bytes
@@ -31,9 +33,17 @@ constexpr auto PERSISTENT_STACK_INDEX = 1;
 */
 #define RM_MALLOC_PERSISTENT(s) MemoryManager::getInstance().stackAllocate(s, PERSISTENT_STACK_INDEX)
 /*
+	Allocates memory from the function stack allocator
+	s: Size in bytes
+*/
+#define RM_MALLOC_FUNCTION(s) MemoryManager::getInstance().stackAllocate(s, FUNCTION_STACK_INDEX)
+
+/*
 	TYPE: Type
 */
-#define RM_NEW(TYPE) new(RM_MALLOC(sizeof(TYPE))) TYPE()
+#define RM_NEW_PERSISTENT(TYPE) new(RM_MALLOC_PERSISTENT(sizeof(TYPE))) TYPE()
+#define RM_NEW_SINGLE_FRAME(TYPE) new(RM_MALLOC_SINGLE_FRAME(sizeof(TYPE))) TYPE()
+#define RM_NEW_FUNCTION(TYPE) new(RM_MALLOC_FUNCTION(sizeof(TYPE))) TYPE()
 #define RM_FREE(s) free(s)
 #define RM_DELETE(s) delete s
 /*

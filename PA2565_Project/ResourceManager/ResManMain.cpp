@@ -10,6 +10,7 @@
 #include <ctime>
 #include <chrono>
 #include <atomic>
+#include <crtdbg.h>
 
 
 #define SOKOL_IMPL
@@ -37,9 +38,32 @@ extern "C" {
 #include "GL/freeglut.h"
 #include "../MemoryManager/MemoryManager.h"
 
+void initMemMngr() {
+	std::vector<StackInstance> stackInstances;
+	unsigned int megabyte = 1024 * 1024;
+	// Single frame stack
+	stackInstances.push_back(StackInstance{ megabyte }); // 1 megabyte
+	// Persistent stack
+	stackInstances.push_back(StackInstance{ megabyte }); // 1 megabyte
+	// Function stack
+	stackInstances.push_back(StackInstance{ megabyte }); // 1 megabyte
+
+	std::vector<PoolInstance> poolInstances;
+	unsigned int size = 64; // The size of a 4x4 matrix of floats
+	// 4 bytes = 32 bit, the architecture of the program (only supports 32-bit right now)
+	unsigned int ARCH_BYTESIZE = 4;
+	unsigned int numAssignments = ARCH_BYTESIZE * 50;
+	unsigned int maxSizeBytes = size * numAssignments;
+	poolInstances.push_back(PoolInstance{ size, numAssignments, 4 });
+
+	MemoryManager &memMngr = MemoryManager::getInstance();
+	memMngr.init(stackInstances, poolInstances);
+}
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 	// Check for memory leaks
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_crtBreakAlloc = 804;
 
 	// Open a debug console window if running in debug mode
 //#ifdef _DEBUG
@@ -132,14 +156,24 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	auto sunDirVec = HMM_Vec4(0.f, -1.f, 0.f, 0.f);
 	vsParams.sunDir = sunDirVec;
 
+	// initialize memory manager
+	initMemMngr();
+
 	// Initialize the resource manager and register the format loaders to it
 	ResourceManager &rm = ResourceManager::getInstance();
 	rm.init(1024 * 500000);
-	rm.registerFormatLoader(RM_NEW(PNGLoader));
-	rm.registerFormatLoader(RM_NEW(JPGLoader));
-	rm.registerFormatLoader(RM_NEW(OBJLoader));
-	rm.registerFormatLoader(RM_NEW(RMMeshLoader));
-	rm.registerFormatLoader(RM_NEW(RMTextureLoader));
+
+	// Roughly 25 bytes per loader (vector with strings of supported formats per formatloader)
+	// Gets deleted in the resource manager
+	rm.registerFormatLoader(new PNGLoader);
+	rm.registerFormatLoader(new JPGLoader);
+	rm.registerFormatLoader(new OBJLoader);
+	rm.registerFormatLoader(new RMMeshLoader);
+	rm.registerFormatLoader(new RMTextureLoader);
+
+	// Load the async temp mesh and texture
+	auto tempMesh = ResourceManager::getInstance().load("Assets/meshes/tempOBJRes.obj");
+	auto tempTex = ResourceManager::getInstance().load("Assets/textures/tempJPGRes.jpg");
 
 	sg_draw_state drawState{ 0 };
 	drawState.pipeline = pip;
@@ -171,16 +205,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* OBJ
 	*/
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	auto start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj")));
-	models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
+	models.back()->getTransform().translate(HMM_Vec3(0.f, -2.f, -3.f));
 	auto timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	std::string debugMsg = std::string("Loading of teapot.obj took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ in Zip loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.obj")));
@@ -193,7 +227,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMMesh
 	*/
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh Loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh")));
@@ -202,7 +236,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugMsg = std::string("Loading of teapot.RMMesh took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh in Zip loading test
 	models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.rmmesh")));
@@ -215,7 +249,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* PNG
 	*/
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png")));
@@ -224,7 +258,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugMsg = std::string("Loading of testImage.png took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG in Zip loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage.png")));
@@ -237,7 +271,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* JPG
 	*/
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg")));
@@ -246,7 +280,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugMsg = std::string("Loading of testImage1.jpg took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG in Zip loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.jpg")));
@@ -259,7 +293,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	/*
 	* RMTex
 	*/
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex")));
@@ -267,7 +301,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugMsg = std::string("Loading of testImage1.rmtex took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW(Model));
+	models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ in Zip loading test
 	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex")));
@@ -393,7 +427,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		for (auto m : models) {
 			m->~Model();
-			::operator delete(m);
 		}
 
 		rm.cleanup();
@@ -403,15 +436,35 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//glutMainLoopEvent();
 	};
 
+	auto allocatedSpaceUpdateFunction = [&keepRunning]() {
+		GlutManager& glutMngr = GlutManager::getInstance();
+		MemoryManager& memMngr = MemoryManager::getInstance();
+
+		auto allocatedSpace = memMngr.getAllocatedSpace();
+		std::vector<std::vector<bool>> stacks(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+		// Update the vectors of the GUI
+		while (keepRunning) {
+			auto allocatedSpace = memMngr.getAllocatedSpace();
+			glutMngr.updateVectors(allocatedSpace.stacks, allocatedSpace.pools);
+			memMngr.updateAllocatedSpace();
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		}
+	};
+
 	std::thread sokolThread(sokolFunc);
+	std::thread memoryTrackingThread(allocatedSpaceUpdateFunction);
 
 	GlutManager& glutMngr = GlutManager::getInstance();
 	glutMngr.EnterMainLoop();
 
 	keepRunning = false;
 	
-
+	memoryTrackingThread.join();
 	sokolThread.join();
+
+	MemoryManager::getInstance().cleanUp();
 
 	return 0;
 }

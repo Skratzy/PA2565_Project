@@ -7,7 +7,7 @@ class Resource;
 
 class PNGLoader : public FormatLoader {
 public:
-	PNGLoader() { 
+	PNGLoader() {
 		m_supportedExtensions.push_back(".png");
 	};
 	~PNGLoader() {};

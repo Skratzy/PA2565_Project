@@ -27,6 +27,8 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		loadZipped = true;
 	}
 
+	auto marker = MemoryManager::getInstance().getStackMarker(FUNCTION_STACK_INDEX);
+
 	// STEP 1: LOAD THE 'RMMesh' FILE
 	if (!loadZipped) {
 		std::ifstream inputFile;
@@ -45,14 +47,14 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		numberOfIndices = std::stoi(tempString);
 
 		//verticesData.resize(numberOfVertices * 8);
-		verticesDataPtr = new (RM_MALLOC(numberOfVertices * 8 * sizeof(float))) float;
+		verticesDataPtr = new (RM_MALLOC_FUNCTION(numberOfVertices * 8 * sizeof(float))) float;
 		for (int i = 0; i < numberOfVertices; i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
 		{
 			std::getline(inputFile, tempString, ',');
 			verticesDataPtr[i] = std::stof(tempString);
 		}
 
-		indicesPtr = new (RM_MALLOC(numberOfIndices * sizeof(uint32_t))) uint32_t;
+		indicesPtr = new (RM_MALLOC_FUNCTION(numberOfIndices * sizeof(uint32_t))) uint32_t;
 		for (int i = 0; i < numberOfIndices; i++)
 		{
 			std::getline(inputFile, tempString, ',');
@@ -71,14 +73,14 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		std::getline(inputFile, tempString);
 		numberOfIndices = std::stoi(tempString);
 
-		verticesDataPtr = new (RM_MALLOC(numberOfVertices * sizeof(float))) float;
+		verticesDataPtr = new (RM_MALLOC_FUNCTION(numberOfVertices * sizeof(float))) float;
 		for (int i = 0; i < numberOfVertices; i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
 		{
 			std::getline(inputFile, tempString, ',');
 			verticesDataPtr[i] = std::stof(tempString);
 		}
 
-		indicesPtr = new (RM_MALLOC(numberOfIndices * sizeof(uint32_t))) uint32_t;
+		indicesPtr = new (RM_MALLOC_FUNCTION(numberOfIndices * sizeof(uint32_t))) uint32_t;
 		for (int i = 0; i < numberOfIndices; i++)
 		{
 			std::getline(inputFile, tempString, ',');
@@ -89,11 +91,13 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 
 
 	unsigned int sizeOnRam = sizeof(MeshResource);
-	MeshResource* meshToBeReturned = new (RM_MALLOC(sizeOnRam)) MeshResource(verticesDataPtr, indicesPtr, numberOfVertices, numberOfIndices, GUID);
+	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRam)) MeshResource(verticesDataPtr, indicesPtr, numberOfVertices, numberOfIndices, GUID);
 	meshToBeReturned->setSize(sizeOnRam);
 
-	delete verticesDataPtr;
-	delete indicesPtr;
+	//delete verticesDataPtr;
+	//delete indicesPtr;
+	// Clear everything we've allocated during the function
+	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX, marker);
 
 	/// ----------------------------------------------------
 	return meshToBeReturned;
