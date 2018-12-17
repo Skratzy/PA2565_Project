@@ -54,6 +54,14 @@ void Model::setMeshNoDeref(Resource* mesh) {
 	m_indexCount = m_mesh->getIndexCount();
 }
 
+void Model::setMeshCallback(Resource * mesh)
+{
+	ResourceManager::getInstance().decrementReference(m_mesh->getGUID());
+	m_mesh = reinterpret_cast<MeshResource*>(mesh);
+	m_vertexCount = m_mesh->getVertexCount();
+	m_indexCount = m_mesh->getIndexCount();
+}
+
 void Model::setTexture(TextureResource * tex)
 {
 	// TODO: Update size
@@ -62,6 +70,12 @@ void Model::setTexture(TextureResource * tex)
 }
 
 void Model::setTexNoDeref(Resource* tex) {
+	m_texture = reinterpret_cast<TextureResource*>(tex);
+}
+
+void Model::setTexCallback(Resource * tex)
+{
+	ResourceManager::getInstance().decrementReference(m_texture->getGUID());
 	m_texture = reinterpret_cast<TextureResource*>(tex);
 }
 

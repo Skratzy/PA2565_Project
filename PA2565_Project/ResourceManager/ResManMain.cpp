@@ -305,10 +305,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	};
 	models.push_back(RM_NEW(Model));
 	models.back()->getTransform().translate(HMM_Vec3(2.f, 0.f, -15.f));
-	std::thread t3(threadAsyncFunc, "Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshNoDeref, models.back(), std::placeholders::_1));
+	std::thread t3(threadAsyncFunc, "Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
 	models.push_back(RM_NEW(Model));
 	models.back()->getTransform().translate(HMM_Vec3(-2.f, 0.f, -15.f));
-	std::thread t4(threadAsyncFunc, "Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshNoDeref, models.back(), std::placeholders::_1));
+	std::thread t4(threadAsyncFunc, "Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
 	t3.join();
 	t4.join();
 
@@ -316,16 +316,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Append a bunch of async asset loading jobs
 	models.push_back(RM_NEW(Model));
 	models.back()->getTransform().translate(HMM_Vec3(2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshNoDeref, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexNoDeref, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 	models.push_back(RM_NEW(Model));
 	models.back()->getTransform().translate(HMM_Vec3(-2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshNoDeref, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexNoDeref, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 	models.push_back(RM_NEW(Model));
 	models.back()->getTransform().translate(HMM_Vec3(2.f, -7.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshNoDeref, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexNoDeref, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
 
 	/*
 		End of testcases
@@ -400,6 +400,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		sg_shutdown();
 		d3d11_shutdown();
 		glutLeaveMainLoop();
+		//glutMainLoopEvent();
 	};
 
 	std::thread sokolThread(sokolFunc);
