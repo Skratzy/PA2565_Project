@@ -1,5 +1,5 @@
 # PA2565_Project
-The final project for the course PA2565 taught by Francisco Lopez Luro and Prashant Goswami at Blekinge Institute of Technology.
+The final project for the course Game Engine Architecture (PA2565) taught by Francisco Lopez Luro and Prashant Goswami at Blekinge Institute of Technology.
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
