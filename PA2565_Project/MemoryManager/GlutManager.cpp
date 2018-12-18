@@ -69,7 +69,6 @@ GlutManager::~GlutManager()
 
 void GlutManager::EnterMainLoop()
 {
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	// Enter the mainloop
 	glutMainLoop();
 	PostQuitMessage(0);
@@ -172,11 +171,13 @@ void GlutManager::initialize(int argc, char **argv)
 	glutInitWindowPosition(-1, -1);	// -1, -1 leaves the window position to the OS
 	glutInitWindowSize(600, 600);	//
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutCreateWindow("Render Window");
+	glutCreateWindow("Memory/Resource Tracking/Visualization");
 	// register callbacks
 	glutDisplayFunc(renderScene);
 	// See the definition of 'timerEvent' above
 	glutTimerFunc(10, timerEvent, 1);
+	
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	// Fill vectors with testData so that it's visible if we haven't done anything
 	m_stacks = createFauxTestData();

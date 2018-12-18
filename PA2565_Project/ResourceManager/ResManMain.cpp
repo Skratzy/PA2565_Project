@@ -169,7 +169,7 @@ ResourceData initResMngr() {
 	ResourceData rd;
 	rd.marker = 0;
 	ResourceManager &rm = ResourceManager::getInstance();
-	rm.init(1024 * 500000);
+	rm.init(10);
 
 	// Roughly 25 bytes per loader (vector with strings of supported formats per formatloader)
 	// Gets deleted in the resource manager
