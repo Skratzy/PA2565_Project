@@ -11,7 +11,6 @@ class TextureResource : public Resource {
 private:
 	unsigned int m_width;
 	unsigned int m_height;
-	std::vector<unsigned char> m_image;
 	sg_image m_imgBuffer;
 
 public:

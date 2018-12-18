@@ -3,6 +3,9 @@
 TextureResource::TextureResource(unsigned int width, unsigned int height, unsigned char* image, const long GUID)
 	: Resource(GUID)
 {
+	m_width = width;
+	m_height = height;
+
 	sg_image_desc sgid{ 0 };
 	sg_image_content sgic{ 0 };
 	sgic.subimage[0][0].ptr = image;
