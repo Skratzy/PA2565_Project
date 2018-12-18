@@ -5,6 +5,7 @@ class Resource
 {
 private:
 	const long m_GUID;
+	std::string m_path;
 	unsigned int m_refCount;
 	unsigned int m_size;	// Initialize at inheritors constructor!
 
@@ -36,6 +37,12 @@ public:
 		return m_size;
 	}
 
+	const char* getPath() const {
+		return m_path.c_str();
+	}
+	void setPath(const char* path) {
+		m_path = path;
+	}
 
 };
 
