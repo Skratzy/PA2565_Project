@@ -33,16 +33,15 @@ void renderScene()
 
 	// Render pools
 	GLfloat poolEntryColor[] = { 0.0f, 0.0f, 1.0f };
-	renderVector(stacksAndPools.at(1), poolEntryColor, renderedBarCount);
-
-	// Render loading
-	GLfloat loadingEntryColor[] = { 1.0f, 1.0f, 0.0f };
-	renderVector(loading, loadingEntryColor, renderedBarCount);
 
 	// Render async
 	GLfloat asyncEntryColor[] = { 1.0f, 1.0f, 0.5f };
-	renderVector(async, asyncEntryColor, renderedBarCount);
+	renderVector(ptr->getAsync(), asyncEntryColor, renderedBarCount);
 	
+	// Render asyncArrays
+//	renderAsyncVector(ptr->getAsync(), asyncEntryColor, renderedBarCount);
+
+
 	delete renderedBarCount;
 
 	//frameCount++;
@@ -153,7 +152,7 @@ every X milliseconds.
 void timerEvent(int t)
 {
 	glutPostRedisplay();				// Render the scene one more time.
-	glutTimerFunc(10, timerEvent, 1);	// Call this function in 100ms.
+	glutTimerFunc(10, timerEvent, 0.1);	// Call this function in 100ms.
 }
 
 void errorFunc(const char *fmt, va_list ap) {

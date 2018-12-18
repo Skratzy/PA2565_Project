@@ -12,6 +12,7 @@
 // Only a single thread will ever run this function
 void ResourceManager::asyncLoadStart()
 {
+	bool needsCleaning = false;
 	while (m_running) {
 		std::unique_lock<std::mutex> lock(m_asyncMutex);
 		if(m_asyncResJobs.size() == 0)
@@ -19,7 +20,7 @@ void ResourceManager::asyncLoadStart()
 
 		// Critical region
 		if (m_asyncResJobs.size() > 0 && m_running) {
-
+			needsCleaning = true;
 			std::cout << "Started Async Loading" << std::endl;
 			// Get the GUID for the next resource job
 			long GUID = m_asyncJobQueue.front();
@@ -41,6 +42,10 @@ void ResourceManager::asyncLoadStart()
 				m_asyncResJobs.erase(currJob);
 				critLock.unlock();
 			}
+		}
+		if (needsCleaning) {
+			GlutManager::getInstance().cleanAsyncArrays();
+			needsCleaning = false;
 		}
 		lock.unlock();
 	}
