@@ -394,6 +394,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	bool keepRunning = true;
 
+
 	// Testing scenario
 	auto sokolFunc = [&renderData, &resourceData, &rm, &keepRunning]() {
 		auto startTime = std::chrono::high_resolution_clock::now();
@@ -410,13 +411,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 			//sunDir.rotateAroundX(0.3f);
 			//vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
-
+			
 			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(3000)) {
 				for (auto m : resourceData.models)
 					m->~Model();
 				resourceData.models.clear();
 				MemoryManager::getInstance().deallocateStack(PERSISTENT_STACK_INDEX, resourceData.marker);
-
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
 				rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1));
