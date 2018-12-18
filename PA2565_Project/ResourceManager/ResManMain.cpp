@@ -294,18 +294,18 @@ void loadingTests(ResourceData &rd){
 	/*
 	* RMTex
 	*/
-	/*models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex", false)));
+	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex", false)));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.rmtex took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
 
-	models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ in Zip loading test
-	models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex", false)));
+	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex", false)));
 	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 	debugMsg = std::string("Loading of testImage1.rmtex from zip took: " + std::to_string(timeTaken) + "ms.");
 	RM_DEBUG_MESSAGE(debugMsg, 0);
@@ -314,50 +314,50 @@ void loadingTests(ResourceData &rd){
 	*	Thread-safety
 	*/
 	// Test thread-safety on normal loading
-	/*std::atomic_int aInt = 0;
+	std::atomic_int aInt = 0;
 	int numPtrs = 2;
 	std::vector<Resource*> resPtrs(numPtrs);
 	auto threadFunc = [&rm, &aInt, &resPtrs](const char* path) {
-		resPtrs[aInt++] = rm.load(path);
+		resPtrs[aInt++] = rm.load(path, false);
 	};
 	std::thread t1(threadFunc, "Assets/meshes/teapot.obj");
 	std::thread t2(threadFunc, "Assets/meshes/teapot.rmmesh");
 	t1.join();
 	t2.join();
-	models.push_back(RM_NEW(Model));
-	models.back()->setMeshNoDeref(resPtrs[0]);
-	models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -15.f));
-	models.push_back(RM_NEW(Model));
-	models.back()->setMeshNoDeref(resPtrs[1]);
-	models.back()->getTransform().translate(HMM_Vec3(0.f, -3.f, -15.f));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->setMeshNoDeref(resPtrs[0]);
+	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -15.f));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->setMeshNoDeref(resPtrs[1]);
+	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -3.f, -15.f));
 
 	// Test thread-safety on async loading
 	auto threadAsyncFunc = [&rm, &aInt, &resPtrs](const char* path, std::function<void(Resource*)> callback) {
 		rm.asyncLoad(path, callback);
 	};
-	models.push_back(RM_NEW(Model));
-	models.back()->getTransform().translate(HMM_Vec3(2.f, 0.f, -15.f));
-	std::thread t3(threadAsyncFunc, "Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-	models.push_back(RM_NEW(Model));
-	models.back()->getTransform().translate(HMM_Vec3(-2.f, 0.f, -15.f));
-	std::thread t4(threadAsyncFunc, "Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, 0.f, -15.f));
+	std::thread t3(threadAsyncFunc, "Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->getTransform().translate(HMM_Vec3(-2.f, 0.f, -15.f));
+	std::thread t4(threadAsyncFunc, "Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
 	t3.join();
 	t4.join();
 
 
 	// Append a bunch of async asset loading jobs
-	models.push_back(RM_NEW(Model));
-	models.back()->getTransform().translate(HMM_Vec3(2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
-	models.push_back(RM_NEW(Model));
-	models.back()->getTransform().translate(HMM_Vec3(-2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
-	models.push_back(RM_NEW(Model));
-	models.back()->getTransform().translate(HMM_Vec3(2.f, -7.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, models.back(), std::placeholders::_1));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, -3.f, -10.f));
+	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->getTransform().translate(HMM_Vec3(-2.f, -3.f, -10.f));
+	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
+	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, -7.f, -10.f));
+	rm.asyncLoad("Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
+	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
 
 	/*
 		End of testcases
