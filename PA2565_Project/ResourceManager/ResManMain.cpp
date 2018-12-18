@@ -206,7 +206,7 @@ void loadingTests(ResourceData &rd){
 	/*
 	* OBJ
 	*/
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	auto start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj", false)));
@@ -228,7 +228,7 @@ void loadingTests(ResourceData &rd){
 	/*
 	* RMMesh
 	*/
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// RMMesh Loading test
 	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh", false)));
@@ -250,7 +250,7 @@ void loadingTests(ResourceData &rd){
 	/*
 	* PNG
 	*/
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// PNG Loading test
 	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png", false)));
@@ -272,7 +272,7 @@ void loadingTests(ResourceData &rd){
 	/*
 	* JPG
 	*/
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// JPG Loading test
 	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg", false)));
@@ -294,7 +294,7 @@ void loadingTests(ResourceData &rd){
 	/*
 	* RMTex
 	*/
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
+	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
 	start = std::chrono::high_resolution_clock::now();
 	// OBJ Loading test
 	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex", false)));
@@ -314,7 +314,7 @@ void loadingTests(ResourceData &rd){
 	*	Thread-safety
 	*/
 	// Test thread-safety on normal loading
-	std::atomic_int aInt = 0;
+	/*std::atomic_int aInt = 0;
 	int numPtrs = 2;
 	std::vector<Resource*> resPtrs(numPtrs);
 	auto threadFunc = [&rm, &aInt, &resPtrs](const char* path) {

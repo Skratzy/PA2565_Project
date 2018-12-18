@@ -15,7 +15,7 @@ void ResourceManager::asyncLoadStart()
 	bool needsCleaning = false;
 	while (m_running) {
 		std::unique_lock<std::mutex> lock(m_asyncMutex);
-		if(m_asyncResJobs.size() == 0)
+		if(m_asyncResJobs.size() == 0 && m_running)
 			m_cond.wait(lock);
 
 		// Critical region
@@ -30,16 +30,18 @@ void ResourceManager::asyncLoadStart()
 			Resource* res = load(currJob->second.filepath, true);
 			{
 				std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
-				// Runs through all callbacks for the current job
-				for (auto callback : currJob->second.callbacks) {
-					callback(res);
-					// Increase the reference to the resource
-					res->refer();
+				if (m_running) {
+					// Runs through all callbacks for the current job
+					for (auto callback : currJob->second.callbacks) {
+						callback(res);
+						// Increase the reference to the resource
+						res->refer();
+					}
+					// Decreases the reference from the resource (the initial load)
+					res->derefer();
+					// Remove the finished job from the map
+					m_asyncResJobs.erase(currJob);
 				}
-				// Decreases the reference from the resource (the initial load)
-				res->derefer();
-				// Remove the finished job from the map
-				m_asyncResJobs.erase(currJob);
 				critLock.unlock();
 			}
 		}
@@ -71,6 +73,7 @@ void ResourceManager::cleanup()
 {
 	m_running = false;
 	m_cond.notify_all();
+	m_asyncLoadThread.join();
 	for (auto FL : m_formatLoaders) {
 		if (FL) {
 			delete FL;
@@ -83,7 +86,6 @@ void ResourceManager::cleanup()
 		RES.second->~Resource();
 		//RM_FREE(RES.second);
 	}
-	m_asyncLoadThread.join();
 }
 
 
@@ -224,6 +226,7 @@ void ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)
 
 void ResourceManager::decrementReference(long key)
 {
+	std::unique_lock<std::mutex> lock(m_derefMutex);
 	if (m_resources.at(key)->derefer() == 0)
 	{
 		m_memUsage -= m_resources.at(key)->getSize();
@@ -231,7 +234,7 @@ void ResourceManager::decrementReference(long key)
 		// Should no longer be required
 		//RM_FREE(m_resources.at(key));
 		m_resources.erase(key);
-	}	
+	}
 }
 
 void ResourceManager::registerFormatLoader(FormatLoader* formatLoader)
