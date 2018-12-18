@@ -82,12 +82,57 @@ void renderBar(double startX, double startY, std::vector<bool> entries, GLfloat 
 	}
 }
 
+
+void renderAsyncBar(double startX, double startY, std::vector<bool> entries, GLfloat entryColor[], double asyncBarY)
+{
+	// Calculate the neccessary data
+	double outerPadding = (BARSIZE_X) / 200;
+	double rectSizeX = (BARSIZE_X - outerPadding * 2) / entries.size();
+	double rectSizeY = asyncBarY - 2 * outerPadding;
+	double innerStartX = startX + outerPadding;
+	double innerStartY = startY + outerPadding;
+
+	// Render large rectangle
+	glColor3f(1.0f, 1.0f, 1.0f);				// Set white Bar-color
+	renderRectangle(BARSIZE_X, asyncBarY, startX, startY);
+
+	// Render squares in terms of entries
+	for (unsigned int x = 0; x < entries.size(); x++) {
+		if (entries.at(x) == true) {			// If an entry exists,
+			glColor3f(entryColor[0], entryColor[1], entryColor[2]);	// Set chosen entry-color
+			renderRectangle(										// Render it
+				rectSizeX, rectSizeY,
+				innerStartX + rectSizeX * x,
+				innerStartY
+			);
+		}
+		else {									// If it doesn't exist,
+			glColor3f(0.0f, 0.0f, 0.0f);							// Set 'empty'-color
+			renderRectangle(										// Render it
+				rectSizeX, rectSizeY,
+				innerStartX + rectSizeX * x,
+				innerStartY
+			);
+		}
+	}
+}
+
 void renderVector(std::vector<std::vector<bool>> vector, GLfloat entryColor[3], int* barCount)
 {
 	for (unsigned int i = 0; i < vector.size(); i++) {
 		double startX = ((-1) + OUTER_PADDING);												// Starts from the left side of the window
 		double startY = 1 - (OUTER_PADDING + (BARSIZE_Y + INNER_PADDING) * ((*barCount) + 1));	// Starts from the top of the window
 		renderBar(startX, startY, vector.at((i)), entryColor);
+		(*barCount)++;
+	}
+}
+
+void renderAsyncVector(std::vector<std::vector<bool>> vector, GLfloat entryColor[3], int* barCount)
+{
+	for (unsigned int i = 0; i < vector.size(); i++) {
+		double startX = ((-1) + OUTER_PADDING);												// Starts from the left side of the window
+		double startY = 1 - (OUTER_PADDING + (BARSIZE_Y + INNER_PADDING) * ((*barCount) + 1));	// Starts from the top of the window
+		renderAsyncBar(startX, startY, vector.at((i)), entryColor, BARSIZE_Y / vector.size());
 		(*barCount)++;
 	}
 }

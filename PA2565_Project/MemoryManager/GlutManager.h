@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-
+#include <mutex>
 /*
 HOW TO TRACK THE MEMORY:
 - #include "GlutManager.hpp"
@@ -26,7 +26,8 @@ private:
 	std::vector<std::vector<bool>> m_pools;
 	std::vector<bool> m_loadingStack;
 	std::vector<bool> m_asyncStack;
-
+	std::vector<std::vector<bool>> m_asyncArrays;
+	std::mutex m_asyncMutex;
 
 public:
 	GlutManager();
@@ -56,4 +57,26 @@ public:
 	void cleanLoadingVector();
 	void updateAsyncVector();
 	void cleanAsyncVector();
+
+	std::vector<std::vector<bool>> getAsync() {
+		return m_asyncArrays;
+	}
+	int addAsyncArray(std::vector<bool> vector) {
+		std::unique_lock<std::mutex> lock(m_asyncMutex);
+		this->m_asyncArrays.clear();
+		this->m_asyncArrays.push_back(vector);
+		int returnIndex = (this->m_asyncArrays.size() - 1);
+		lock.unlock();
+
+		return returnIndex;
+	}
+	void cleanAsyncArrays() {
+		m_asyncArrays.clear();
+		std::vector<bool> tempVector;
+		tempVector.push_back(false);
+		m_asyncArrays.push_back(tempVector);
+	}
+	void alterAsyncArray(int arrayIndex, int boolIndex, bool value) {
+		this->m_asyncArrays[arrayIndex][boolIndex] = value;
+	}
 };
