@@ -45,9 +45,8 @@ private:
 	std::condition_variable m_cond;
 	std::mutex m_asyncMutex;
 	std::mutex m_asyncLoadMutex;
-	std::mutex m_derefMutex;
+	std::mutex m_clearJobsMutex;
 	bool m_running;
-
 
 private:
 	void asyncLoadStart();
@@ -71,6 +70,7 @@ public:
 	ResourceManager();
 	~ResourceManager();
 	void cleanup();
+	void clearResourceManager();
 
 	void init(const unsigned int capacity);
 
@@ -78,6 +78,7 @@ public:
 	AsyncJobIndex asyncLoad(const char* path, std::function<void(Resource*)> callback);
 
 	void removeAsyncJob(AsyncJobIndex index);
+	void removeAllAsyncJobs();
 
 	void decrementReference(long key);
 

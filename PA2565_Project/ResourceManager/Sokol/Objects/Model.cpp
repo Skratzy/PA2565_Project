@@ -30,6 +30,7 @@ Model::~Model()
 
 void Model::draw(sg_draw_state& drawState, vs_params_t& vsParams)
 {
+	std::lock_guard<std::mutex> lock(tempMutex);
 	drawState.vertex_buffers[0] = m_mesh->getVertexBuffer();
 	drawState.index_buffer = m_mesh->getIndexBuffer();
 	drawState.fs_images[0] = m_texture->getImage();
@@ -56,8 +57,10 @@ void Model::setMeshNoDeref(Resource* mesh) {
 
 void Model::setMeshCallback(Resource * mesh)
 {
+	std::lock_guard<std::mutex> lock(tempMutex);
 	ResourceManager::getInstance().decrementReference(m_mesh->getGUID());
 	m_mesh = reinterpret_cast<MeshResource*>(mesh);
+	RM_DEBUG_MESSAGE("Set a new mesh -- " + std::string(m_mesh->getPath()), 0);
 	m_vertexCount = m_mesh->getVertexCount();
 	m_indexCount = m_mesh->getIndexCount();
 }
@@ -75,8 +78,10 @@ void Model::setTexNoDeref(Resource* tex) {
 
 void Model::setTexCallback(Resource * tex)
 {
+	std::lock_guard<std::mutex> lock(tempMutex);
 	ResourceManager::getInstance().decrementReference(m_texture->getGUID());
 	m_texture = reinterpret_cast<TextureResource*>(tex);
+	RM_DEBUG_MESSAGE("Set a new texture -- " + std::string(m_texture->getPath()), 0);
 }
 
 Transform & Model::getTransform()
