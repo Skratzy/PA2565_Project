@@ -113,9 +113,6 @@
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\LodePNG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\OBJ_Loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\OBJLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>

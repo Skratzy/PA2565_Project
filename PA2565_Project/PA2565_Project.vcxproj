@@ -110,7 +110,6 @@
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\JPGLoader.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\LodePNG.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\OBJLoader.h" />
-    <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\OBJ_Loader.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\PNGLoader.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\RMMeshLoader.h" />
     <ClInclude Include="ResourceManager\ResManAPI\FormatLoaders\RMTextureLoader.h" />
