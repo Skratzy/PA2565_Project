@@ -30,18 +30,19 @@ void ResourceManager::asyncLoadStart()
 			Resource* res = load(currJob->second.filepath, true);
 			{
 				std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
-				if (m_running) {
-					// Runs through all callbacks for the current job
-					for (auto callback : currJob->second.callbacks) {
-						callback(res);
-						// Increase the reference to the resource
-						res->refer();
-					}
-					// Decreases the reference from the resource (the initial load)
-					res->derefer();
-					// Remove the finished job from the map
-					m_asyncResJobs.erase(currJob);
+				// Runs through all callbacks for the current job
+				for (auto callback : currJob->second.callbacks) {
+					// Increase the reference to the resource
+					res->refer();
+
+					// If the job should still be performed, run the job
+					if(callback.run)
+						callback.callback(res);
 				}
+				// Decreases the reference from the resource (the initial load)
+				res->derefer();
+				// Remove the finished job from the map
+				m_asyncResJobs.erase(currJob);
 				critLock.unlock();
 			}
 		}
@@ -179,7 +180,7 @@ Resource * ResourceManager::load(const char* path, bool isAsync)
 	return res;
 }
 
-void ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)> callback)
+ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)> callback)
 {
 	long hashedPath = m_pathHasher(path);
 	Resource* res = nullptr;
@@ -191,7 +192,7 @@ void ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)
 		res = it->second;
 		res->refer();
 		callback(res);
-		return;
+		return AsyncJobIndex{0, 0};
 	}
 	else {
 		// Critical region
@@ -205,22 +206,34 @@ void ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)
 			res = it->second;
 			res->refer();
 			callback(res);
-			return;
+			return AsyncJobIndex{ 0, 0 };
 		}
 		
 		// Find out if the job is already queued
 		auto asyncJobsIt = m_asyncResJobs.find(hashedPath);
 		// The job already exists, push back another callback
 		if (asyncJobsIt != m_asyncResJobs.end()) {
-			asyncJobsIt->second.callbacks.push_back(callback);
+			asyncJobsIt->second.callbacks.push_back(AsyncJobCallback{ true, callback });
+			return AsyncJobIndex{ hashedPath, asyncJobsIt->second.callbacks.size() - 1 };
 		}
 		else {
-			std::vector<std::function<void(Resource*)>> callbacks;
-			callbacks.push_back(callback);
+			std::vector<AsyncJobCallback> callbacks;
+			callbacks.push_back(AsyncJobCallback{ true, callback });
 			m_asyncResJobs.emplace(hashedPath, AsyncJob{ path, callbacks });
 			m_asyncJobQueue.push(hashedPath);
 			m_cond.notify_one();
+			return AsyncJobIndex{ hashedPath, 0 };
 		}
+	}
+}
+
+void ResourceManager::removeAsyncJob(AsyncJobIndex index)
+{
+	std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
+	auto job = m_asyncResJobs.find(index.GUID);
+	// if the job was found, make sure the job isn't ran
+	if (job != m_asyncResJobs.end()) {
+		job->second.callbacks.at(index.IndexOfCallback).run = false;
 	}
 }
 

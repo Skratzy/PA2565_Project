@@ -1,6 +1,5 @@
 #include "../../Defines.h"
 #include "OBJLoader.h"
-#include "OBJ_Loader.h"
 #include "../Resources/MeshResource.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION

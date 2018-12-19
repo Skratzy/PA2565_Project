@@ -398,6 +398,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Testing scenario
 	auto sokolFunc = [&renderData, &resourceData, &rm, &keepRunning]() {
 		auto startTime = std::chrono::high_resolution_clock::now();
+		std::vector<ResourceManager::AsyncJobIndex> activeJobs;
 		while (d3d11_process_events()) {
 
 			/*Extremely simple camera rotation*/
@@ -413,30 +414,36 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			//vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
 			
 			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(3000)) {
+				
+				for (auto job : activeJobs)
+					rm.removeAsyncJob(job);
+				activeJobs.clear();
+
 				for (auto m : resourceData.models)
 					m->~Model();
 				resourceData.models.clear();
+
 				MemoryManager::getInstance().deallocateStack(PERSISTENT_STACK_INDEX, resourceData.marker);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
-				rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1));
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(-10.f, -8.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1));
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -20.f));
-				rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1));
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, -17.f, -20.f));
-				rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1));
-				rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1));
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				startTime = std::chrono::high_resolution_clock::now();
 			}
@@ -451,6 +458,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			sg_commit();
 			d3d11_present();
 		}
+
+		for (auto job : activeJobs)
+			rm.removeAsyncJob(job);
 
 		for (auto m : resourceData.models) {
 			m->~Model();

@@ -30,10 +30,15 @@ private:
 	
 	bool m_initialized;
 
+	struct AsyncJobCallback {
+		bool run;
+		std::function<void(Resource*)> callback;
+	};
 	struct AsyncJob {
 		const char* filepath;
-		std::vector<std::function<void(Resource*)>> callbacks;
+		std::vector<AsyncJobCallback> callbacks;
 	};
+
 	std::queue<long> m_asyncJobQueue;
 	std::map<long, AsyncJob> m_asyncResJobs;
 	std::thread m_asyncLoadThread;
@@ -46,6 +51,12 @@ private:
 
 private:
 	void asyncLoadStart();
+
+public:
+	struct AsyncJobIndex {
+		long GUID;
+		unsigned int IndexOfCallback;
+	};
 
 public:
 
@@ -64,7 +75,9 @@ public:
 	void init(const unsigned int capacity);
 
 	Resource* load(const char* path, bool isAsync);
-	void asyncLoad(const char* path, std::function<void(Resource*)> callback);
+	AsyncJobIndex asyncLoad(const char* path, std::function<void(Resource*)> callback);
+
+	void removeAsyncJob(AsyncJobIndex index);
 
 	void decrementReference(long key);
 
