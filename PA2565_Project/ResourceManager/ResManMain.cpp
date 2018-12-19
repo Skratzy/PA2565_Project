@@ -449,7 +449,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 			float index = 0.1f;
 			for (auto model : resourceData.models) {
-				model->getTransform().rotateAroundY(std::rand() % 10);
+				model->getTransform().rotateAroundY(5.f);
 				model->draw(renderData.drawState, renderData.vsParams);
 			}
 

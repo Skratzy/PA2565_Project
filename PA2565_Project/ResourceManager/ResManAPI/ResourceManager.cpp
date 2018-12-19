@@ -240,13 +240,18 @@ void ResourceManager::removeAsyncJob(AsyncJobIndex index)
 void ResourceManager::decrementReference(long key)
 {
 	std::unique_lock<std::mutex> lock(m_derefMutex);
-	if (m_resources.at(key)->derefer() == 0)
-	{
-		m_memUsage -= m_resources.at(key)->getSize();
-		m_resources.at(key)->~Resource();
-		// Should no longer be required
-		//RM_FREE(m_resources.at(key));
-		m_resources.erase(key);
+	auto resource = m_resources.find(key);
+	if (resource != m_resources.end()) {
+		if (resource->second->derefer() == 0)
+		{
+			// Only when not using level-based handling of the memory
+			//m_memUsage -= resource->second->getSize();
+			resource->second->~Resource();
+			// Should no longer be required
+			//RM_FREE(m_resources.at(key));
+			// Remove the resource from the map
+			m_resources.erase(resource);
+		}
 	}
 }
 
