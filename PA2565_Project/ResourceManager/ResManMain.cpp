@@ -580,20 +580,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//io.DeltaTime = (float)stm_sec(stm_laptime(&last_time));
 		ImGui::NewFrame();
 
-		// 1. Show a simple window
-		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-		static float f = 0.0f;
-		ImGui::Text("Hello, world!");
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-		ImGui::ColorEdit3("clear color", &renderData.pass_action.colors[0].val[0]);
-		if (ImGui::Button("Test Window")) show_test_window ^= 1;
-		if (ImGui::Button("Another Window")) show_another_window ^= 1;
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+		ImGui::Begin("Memory Usage");
+		MemoryManager::getInstance().updateAllocatedSpace();
+		auto aSpace = MemoryManager::getInstance().getAllocatedSpace();
+		for (auto stack : aSpace.stacks) {
+			float amountUsed = 0.f;
+			for (auto used : stack)
+				amountUsed += used;
+			ImGui::ProgressBar(amountUsed / static_cast<float>(stack.size()));
+		}
+		ImGui::End();
+
 
 		auto resources = rm.getResources();
 		std::string resString = "";
 		for (auto res : resources) {
-			//std::experimental::filesystem::path path(res.second->getPath());
 			resString.append("GUID: ");
 			resString.append(std::to_string(res.second->getGUID()));
 			resString.append("  Path: ");
@@ -601,9 +604,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			resString.append("\n");
 		}
 
-		// 2. Show another simple window, this time using an explicit Begin/End pair
-		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-		ImGui::Begin("Another Window", &show_another_window);
+		// Displays the window holding the resources contained within the resource manager
+		ImGui::SetNextWindowSize(ImVec2(400, 150), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(sokol_width - 400, 0), ImGuiSetCond_FirstUseEver);
+		ImGui::Begin("Resources in System");
 		ImGui::Text(resString.c_str());
 		ImGui::End();
 
