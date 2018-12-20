@@ -74,7 +74,7 @@ public:
 
 	void init(const unsigned int capacity);
 
-	Resource* load(const char* path, bool isAsync);
+	Resource* load(const char* path);
 	AsyncJobIndex asyncLoad(const char* path, std::function<void(Resource*)> callback);
 
 	void removeAsyncJob(AsyncJobIndex index);
@@ -84,6 +84,7 @@ public:
 
 	void registerFormatLoader(FormatLoader* formatLoader);
 
+	const std::map<long, Resource*>& getResources() const;
 	//void incrementReference(long key); SHOULDN'T BE NEEDED (done when loading already existing)
 };
 

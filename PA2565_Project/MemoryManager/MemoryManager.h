@@ -9,7 +9,7 @@
 
 // DEFINITIONS
 // --------------------------------------
-struct MemoryUsage { // All vectors of bools are visually depicted by GLUT
+struct MemoryUsage { // All vectors of bools are used to visualize memory usage
 	std::vector<std::vector<bool>> stacks;
 	std::vector<std::vector<bool>> pools;
 };

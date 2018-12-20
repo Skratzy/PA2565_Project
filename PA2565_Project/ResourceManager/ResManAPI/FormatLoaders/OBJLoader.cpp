@@ -9,8 +9,6 @@
 #include <map>
 #include <unordered_map>
 
-#include "../PA2565_Project/MemoryManager/GlutManager.h"
-
 Resource* OBJLoader::load(const char* path, const long GUID)
 {	
 	// Checking if the asset is in a package
@@ -70,13 +68,6 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 
 	unsigned int i = 0;
 
-	/// For GLUT ---------------------------
-	// calculate the total indice count so that we can determine percentage completed
-	GlutManager& glut = GlutManager::getInstance();
-	std::vector<bool> progress(numIndices, false);
-	int arrayIndex = glut.addAsyncArray(progress);
-	/// For GLUT ---------------------------
-
 	// Very inefficient way of drawing loading the meshes
 	for (const auto& shape : shapes) // PER SHAPE
 	{
@@ -111,9 +102,6 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 				verticesDataPtr[i * 8 + 7] = (0.f);
 			}
 
-			/// For GLUT ---------------------------s
-			glut.alterAsyncArray(arrayIndex, i, true);
-			/// For GLUT ---------------------------
 			i++;
 		}
 	}

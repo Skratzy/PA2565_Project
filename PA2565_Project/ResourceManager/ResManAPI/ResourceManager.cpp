@@ -7,12 +7,10 @@
 #include "FormatLoaders/FormatLoader.h"
 #include <fstream>
 #include <ziplib/zip.h>
-#include "../PA2565_Project/MemoryManager/GlutManager.h"
 
 // Only a single thread will ever run this function
 void ResourceManager::asyncLoadStart()
 {
-	bool needsCleaning = false;
 	while (m_running) {
 		std::unique_lock<std::mutex> lock(m_asyncMutex);
 		if(m_asyncResJobs.size() == 0 && m_running)
@@ -22,14 +20,13 @@ void ResourceManager::asyncLoadStart()
 			std::lock_guard<std::mutex> jobsClearingLock(m_clearJobsMutex);
 
 			if (m_asyncResJobs.size() > 0 && m_running) {
-				needsCleaning = true;
 				std::cout << "Started Async Loading" << std::endl;
 				// Get the GUID for the next resource job
 				long GUID = m_asyncJobQueue.front();
 				m_asyncJobQueue.pop();
 				// Find the job
 				auto currJob = m_asyncResJobs.find(GUID);
-				Resource* res = load(currJob->second.filepath, true);
+				Resource* res = load(currJob->second.filepath);
 				{
 					std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 					auto size = currJob->second.callbacks.size();
@@ -60,10 +57,6 @@ void ResourceManager::asyncLoadStart()
 				}
 			}
 
-		}
-		if (needsCleaning) {
-			GlutManager::getInstance().cleanAsyncArrays();
-			needsCleaning = false;
 		}
 	}
 }
@@ -126,21 +119,12 @@ void ResourceManager::init(const unsigned int capacity) {
 	}
 }
 
-Resource * ResourceManager::load(const char* path, bool isAsync)
+Resource * ResourceManager::load(const char* path)
 {
-	GlutManager& glut = GlutManager::getInstance();
 
 	Resource* res = nullptr;
 	namespace fs = std::experimental::filesystem;
 	long hashedPath = m_pathHasher(path);
-
-	// Update glut depending on if it's loading/async
-	if (isAsync) {
-		glut.updateAsyncVector();
-	}
-	else {
-		glut.updateLoadingVector();
-	}
 
 	// Check if the resource already exists in the system
 	auto it = m_resources.find(hashedPath);
@@ -196,14 +180,6 @@ Resource * ResourceManager::load(const char* path, bool isAsync)
 				}
 			}
 		}
-	}
-
-	if (isAsync) {
-		std::cout << "Finished Async Loading" << std::endl;
-		glut.cleanAsyncVector();
-	}
-	else {
-		glut.cleanLoadingVector();
 	}
 
 	return res;
@@ -294,4 +270,9 @@ void ResourceManager::registerFormatLoader(FormatLoader* formatLoader)
 {
 	// Put the new format loader in the vector
 	m_formatLoaders.emplace_back(formatLoader);
+}
+
+const std::map<long, Resource*>& ResourceManager::getResources() const
+{
+	return m_resources;
 }

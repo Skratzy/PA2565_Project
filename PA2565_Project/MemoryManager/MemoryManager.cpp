@@ -156,12 +156,12 @@ Marker MemoryManager::getStackMarker(unsigned int indexOfStack)
 void MemoryManager::updateAllocatedSpace()
 {
 	for (unsigned int i = 0; i < m_stacks.size(); i++) {
-		// Updates multiple 'vector<bool>' for the SF-stack for GLUT (used to visualize memory consumption)
+		// Updates multiple 'vector<bool>' (used to visualize memory consumption)
 		m_currMemUsage.stacks[i] = m_stacks[i]->getUsedMemory();
 	}
 
 	for (unsigned int i = 0; i < m_pools.size(); i++) {
-		// Updates multiple 'vector<bool>' for GLUT (used to visualize memory consumption)
+		// Updates multiple 'vector<bool>' (used to visualize memory consumption)
 		m_currMemUsage.pools[i] = m_pools.at(i)->getUsedMemory();
 	}
 }

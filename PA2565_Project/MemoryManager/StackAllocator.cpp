@@ -79,7 +79,7 @@ void StackAllocator::clearToMarker(Marker marker)
 
 std::vector<bool> StackAllocator::getUsedMemory()
 {
-	// A vector of bools that represents used memory, later drawn by GLUT
+	// A vector of bools that represents used memory
 	std::vector<bool> usedMemory;
 	usedMemory.resize(100);
 	// Calculate percentage of total memory used

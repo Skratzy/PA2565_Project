@@ -29,7 +29,7 @@ public: /// FUNCTIONS
 	Marker getMarker();
 	void clearToMarker(Marker marker);
 
-	// Memory tracking for our GLUT-Manager (Drawing our stack)
+	// Memory tracking 
 	virtual std::vector<bool> getUsedMemory();
 };
 
