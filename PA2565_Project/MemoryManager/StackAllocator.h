@@ -31,6 +31,7 @@ public: /// FUNCTIONS
 
 	// Memory tracking 
 	virtual std::vector<bool> getUsedMemory();
+	float getUsedMemoryPercentage();
 };
 
 #endif //STACK_ALLOCATOR

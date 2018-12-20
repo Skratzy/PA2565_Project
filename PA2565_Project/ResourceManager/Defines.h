@@ -18,9 +18,8 @@
 	s: Size in bytes
 */
 #define RM_MALLOC_POOL_ALLOC(s)
-constexpr auto SINGLE_FRAME_STACK_INDEX = 0;
-constexpr auto PERSISTENT_STACK_INDEX = 1;
-constexpr auto FUNCTION_STACK_INDEX = 2;
+constexpr auto PERSISTENT_STACK_INDEX = 0;
+constexpr auto FUNCTION_STACK_INDEX = 1;
 
 /*
 	Allocates memory for a single frame

@@ -64,15 +64,18 @@ struct vs_params_imgui {
 	ImVec2 disp_size;
 };
 
+
+unsigned int g_rm_megabyte = 1024 * 1024;
+unsigned int g_persistentStackSize = g_rm_megabyte / 512; // 2 KB
+unsigned int g_functionStackSize = g_rm_megabyte * 128; // 128 MB
+
 void initMemMngr() {
+
 	std::vector<StackInstance> stackInstances;
-	unsigned int megabyte = 1024 * 1024;
-	// Single frame stack
-	stackInstances.push_back(StackInstance{ megabyte }); // 1 megabyte
 	// Persistent stack
-	stackInstances.push_back(StackInstance{ megabyte / 512 }); // 1 megabyte
+	stackInstances.push_back(StackInstance{ g_persistentStackSize }); // 1 megabyte
 	// Function stack
-	stackInstances.push_back(StackInstance{ megabyte * 128 }); // 1 megabyte
+	stackInstances.push_back(StackInstance{ g_functionStackSize }); // 1 megabyte
 
 	std::vector<PoolInstance> poolInstances;
 	unsigned int size = 64; // The size of a 4x4 matrix of floats
@@ -362,8 +365,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	bool show_another_window = false;
 	/* END OF IMGUI */
 
-	auto startTime = std::chrono::high_resolution_clock::now();
+	auto startTime1 = std::chrono::high_resolution_clock::now() - std::chrono::seconds(5);
+	auto startTime2 = startTime1 + std::chrono::seconds(5);
 	std::vector<ResourceManager::AsyncJobIndex> activeJobs;
+	/* Main rendering/processing loop */
 	while (d3d11_process_events()) {
 
 
@@ -380,17 +385,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//io.DeltaTime = (float)stm_sec(stm_laptime(&last_time));
 		ImGui::NewFrame();
 
-		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(350, 120), ImGuiSetCond_FirstUseEver);
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
 		ImGui::Begin("Memory Usage");
-		MemoryManager::getInstance().updateAllocatedSpace();
-		auto aSpace = MemoryManager::getInstance().getAllocatedSpace();
-		for (auto stack : aSpace.stacks) {
-			float amountUsed = 0.f;
-			for (auto used : stack)
-				amountUsed += used;
-			ImGui::ProgressBar(amountUsed / static_cast<float>(stack.size()));
-		}
+		MemoryManager::getInstance().updateAllocatedSpacePercentage();
+		auto aSpace = MemoryManager::getInstance().getAllocatedSpacePercentage();
+
+		std::string header = "Persistent Stack - Size (" + std::to_string(g_persistentStackSize / 1024) + "KB)";
+		ImGui::Text(header.c_str());
+		ImGui::ProgressBar(aSpace.stacks[PERSISTENT_STACK_INDEX]);
+
+		header = "Function Stack - Size (" + std::to_string(g_functionStackSize / (1024 * 1024) ) + "MB)";
+		ImGui::Text(header.c_str());
+		ImGui::ProgressBar(aSpace.stacks[FUNCTION_STACK_INDEX]);
+
 		ImGui::End();
 
 
@@ -424,8 +432,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		/* draw frame */
 		sg_begin_default_pass(&renderData.pass_action, d3d11_width(), d3d11_height());
-
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(10000)) {
+		
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime1) > std::chrono::milliseconds(10000)) {
 
 			RM_DEBUG_MESSAGE("----------CLEARING----------", 0);
 
@@ -435,46 +443,58 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			for (auto m : resourceData.models)
 				m->~Model();
 			resourceData.models.clear();
+			
+			// Reset the stack to the marker
+			MemoryManager::getInstance().deallocateStack(PERSISTENT_STACK_INDEX, resourceData.marker);
+
+			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
+			resourceData.models[0]->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
+			resourceData.models[0]->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+			resourceData.models[0]->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+			resourceData.models[0]->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
+			
+			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
+			resourceData.models[1]->getTransform().translate(HMM_Vec3(-10.f, -8.f, -20.f));
+			resourceData.models[1]->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+			resourceData.models[1]->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+			resourceData.models[1]->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
+
+			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
+			resourceData.models[2]->getTransform().translate(HMM_Vec3(0.f, 0.f, -20.f));
+			resourceData.models[2]->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+			resourceData.models[2]->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+			resourceData.models[2]->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
+
+			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
+			resourceData.models[3]->getTransform().translate(HMM_Vec3(0.f, -20.f, -40.f));
+			resourceData.models[3]->getTransform().setScale(HMM_Vec3(4.f, 4.f, 4.f));
+			resourceData.models[3]->getTransform().rotateAroundY(65.f);
 
 			RM_DEBUG_MESSAGE("----------DONE CLEARING----------", 0);
+			
+			startTime1 = std::chrono::high_resolution_clock::now();
+		}
+
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime2) > std::chrono::milliseconds(10000)) {
+
 			RM_DEBUG_MESSAGE("----------INIT----------", 0);
 
-			MemoryManager::getInstance().deallocateStack(PERSISTENT_STACK_INDEX, resourceData.marker);
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
-			resourceData.models.back()->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
-			resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
-			activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-			activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models[0], std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models[0], std::placeholders::_1)));
 
-			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
-			resourceData.models.back()->getTransform().translate(HMM_Vec3(-10.f, -8.f, -20.f));
-			resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
-			activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-			activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/AssetsPackage.zip/AssetsPackage/meshes/cow-nonormals.rmmesh", std::bind(&Model::setMeshCallback, resourceData.models[1], std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models[1], std::placeholders::_1)));
 
-			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
-			resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -20.f));
-			resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
-			resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
-			activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-			activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models[2], std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models[2], std::placeholders::_1)));
 
-			resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
-			resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, -20.f, -40.f));
-			resourceData.models.back()->getTransform().setScale(HMM_Vec3(4.f, 4.f, 4.f));
-			resourceData.models.back()->getTransform().rotateAroundY(65.f);
-			activeJobs.push_back(rm.asyncLoad("Assets/meshes/shelbyEdited.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/meshes/shelbyEdited.obj", std::bind(&Model::setMeshCallback, resourceData.models[3], std::placeholders::_1)));
 
 			RM_DEBUG_MESSAGE("----------DONE INIT----------", 0);
 
-			startTime = std::chrono::high_resolution_clock::now();
+			startTime2 = std::chrono::high_resolution_clock::now();
 		}
+
 		float index = 0.1f;
 		for (auto model : resourceData.models) {
 			model->getTransform().rotateAroundY(2.f);

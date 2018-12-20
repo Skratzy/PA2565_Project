@@ -90,3 +90,9 @@ std::vector<bool> StackAllocator::getUsedMemory()
 
 	return usedMemory;
 }
+
+float StackAllocator::getUsedMemoryPercentage()
+{
+	// Percentage of used memory
+	return float(m_marker) / float(m_sizeBytes);
+}

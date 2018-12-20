@@ -68,6 +68,7 @@ void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const
 		addStack(SI);
 		// Creating 'vector<bool>' for memory tacking purposes
 		m_currMemUsage.stacks.push_back(m_stacks.at(currIndex++)->getUsedMemory());
+		m_currMemUsagePercentage.stacks.push_back(0.f);
 	}
 
 	currIndex = 0;
@@ -79,6 +80,7 @@ void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const
 		addPool(PI);
 		// Creating 'vector<bool>' for memory tacking purposes
 		m_currMemUsage.pools.push_back(m_pools.at(currIndex++)->getUsedMemory());
+		m_currMemUsagePercentage.stacks.push_back(0.f);
 	}
 }
 
@@ -169,6 +171,18 @@ void MemoryManager::updateAllocatedSpace()
 MemoryUsage& MemoryManager::getAllocatedSpace()
 {
 	return m_currMemUsage;
+}
+
+void MemoryManager::updateAllocatedSpacePercentage()
+{
+	for (unsigned int i = 0; i < m_stacks.size(); i++) {
+		m_currMemUsagePercentage.stacks[i] = m_stacks[i]->getUsedMemoryPercentage();
+	}
+}
+
+MemoryUsagePercentage & MemoryManager::getAllocatedSpacePercentage()
+{
+	return m_currMemUsagePercentage;
 }
 
 void MemoryManager::cleanUp()

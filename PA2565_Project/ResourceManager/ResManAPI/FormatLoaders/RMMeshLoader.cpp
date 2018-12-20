@@ -41,13 +41,13 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		std::string tempString;
 		// # OF VERTICES
 		std::getline(inputFile, tempString);
-		numberOfVertices = std::stoi(tempString);
+		numberOfVertices = std::stoi(tempString) * 8;
 		// # OF INDICES
 		std::getline(inputFile, tempString);
 		numberOfIndices = std::stoi(tempString);
 
 		//verticesData.resize(numberOfVertices * 8);
-		verticesDataPtr = new (RM_MALLOC_FUNCTION(numberOfVertices * 8 * sizeof(float))) float;
+		verticesDataPtr = new (RM_MALLOC_FUNCTION(numberOfVertices * sizeof(float))) float;
 		for (int i = 0; i < numberOfVertices; i++) // ORDER: p.X, p.Y, p.Z, n.X, n.Y, n.Z, U, V
 		{
 			std::getline(inputFile, tempString, ',');
@@ -68,7 +68,7 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 		inputFile << tempString;
 		// # OF VERTICES
 		std::getline(inputFile, tempString);
-		numberOfVertices = std::stoi(tempString);
+		numberOfVertices = std::stoi(tempString) * 8;
 		// # OF INDICES
 		std::getline(inputFile, tempString);
 		numberOfIndices = std::stoi(tempString);

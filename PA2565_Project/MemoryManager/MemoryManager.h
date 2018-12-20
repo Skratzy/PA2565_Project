@@ -14,6 +14,11 @@ struct MemoryUsage { // All vectors of bools are used to visualize memory usage
 	std::vector<std::vector<bool>> pools;
 };
 
+struct MemoryUsagePercentage {
+	std::vector<float> stacks;
+	std::vector<float> pools;
+};
+
 struct PoolInstance {
 	unsigned int sizeBytesEachEntry;
 	unsigned int numEntries;
@@ -33,6 +38,7 @@ private: /// VARIABLES
 	std::vector<StackAllocator*> m_stacks;
 
 	MemoryUsage m_currMemUsage;
+	MemoryUsagePercentage m_currMemUsagePercentage;
 
 private: /// FUNCTIONS
 	void* getMem(unsigned int sizeBytes);
@@ -70,6 +76,9 @@ public: /// FUNCTIONS
 
 	void updateAllocatedSpace();
 	MemoryUsage& getAllocatedSpace();
+
+	void updateAllocatedSpacePercentage();
+	MemoryUsagePercentage& getAllocatedSpacePercentage();
 
 	void cleanUp();
 };
