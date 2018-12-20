@@ -111,8 +111,6 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	meshToBeReturned->setSize(sizeOnRAM);
 	/// ----------------------------------------------------
 
-	//delete verticesDataPtr;
-	//delete indicesPtr;
 	// ResourceManager::load() will never get here in more than one thread at a time
 	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX);
 
