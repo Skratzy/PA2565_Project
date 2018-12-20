@@ -38,16 +38,7 @@ void ResourceManager::asyncLoadStart()
 							currJob->second.callbacks[i].callback(res);
 						}
 					}
-					/*// Runs through all callbacks for the current job
-					for (auto callback : currJob->second.callbacks) {
-
-						// If the job should still be performed, run the job
-						if (callback.run) {
-							// Increase the reference count of the resource
-							res->refer();
-							callback.callback(res);
-						}
-					}*/
+					
 					// Decreases the reference from the resource (the initial load)
 					decrementReference(res->getGUID());
 					//res->derefer();
@@ -258,8 +249,6 @@ void ResourceManager::decrementReference(long key)
 			// Only when not using level-based handling of the memory
 			//m_memUsage -= resource->second->getSize();
 			resource->second->~Resource();
-			// Should no longer be required
-			//RM_FREE(m_resources.at(key));
 			// Remove the resource from the map
 			m_resources.erase(resource);
 		}

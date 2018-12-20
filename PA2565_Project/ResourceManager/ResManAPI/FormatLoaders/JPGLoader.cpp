@@ -37,11 +37,6 @@ Resource * JPGLoader::load(const char* path, const long GUID)
 		// Conversion of a single char array into the vector
 		for (unsigned int y = 0; y < height; y++) {
 			for (unsigned int x = 0; x < width; x++) {
-				// source.data(pixel_x, pixel_y, depth, color(0,1,2 = red,green,blue)
-				/*image.push_back(*source.data(x, y, 0, 0)); 
-				image.push_back(*source.data(x, y, 0, 1));
-				image.push_back(*source.data(x, y, 0, 2));
-				image.push_back(unsigned char(255));*/
 				imageDataPtr[index++] = *source.data(x, y, 0, 0);
 				imageDataPtr[index++] = *source.data(x, y, 0, 1);
 				imageDataPtr[index++] = *source.data(x, y, 0, 2);

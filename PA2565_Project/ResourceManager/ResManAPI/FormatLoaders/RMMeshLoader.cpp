@@ -94,8 +94,6 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRam)) MeshResource(verticesDataPtr, indicesPtr, numberOfVertices, numberOfIndices, GUID);
 	meshToBeReturned->setSize(sizeOnRam);
 
-	//delete verticesDataPtr;
-	//delete indicesPtr;
 	// Clear everything we've allocated during the function
 	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX, marker);
 

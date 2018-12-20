@@ -206,182 +206,6 @@ ResourceData initResMngr() {
 	return rd;
 }
 
-void loadingTests(ResourceData &rd){
-
-
-	ResourceManager &rm = ResourceManager::getInstance();
-	/*
-		Testcases
-	*/
-
-	/*
-	// Support for all supported formats and loading from zip folders
-	*/
-
-	rd.marker = MemoryManager::getInstance().getStackMarker(PERSISTENT_STACK_INDEX);
-
-	/*
-	* OBJ
-	*/
-	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	auto start = std::chrono::high_resolution_clock::now();
-	// OBJ Loading test
-	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.obj", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -2.f, -3.f));
-	auto timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	std::string debugMsg = std::string("Loading of teapot.obj took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// OBJ in Zip loading test
-	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.obj", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of teapot.obj from zip took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-
-	/*
-	* RMMesh
-	*/
-	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// RMMesh Loading test
-	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/meshes/teapot.rmmesh", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of teapot.RMMesh took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// RMMesh in Zip loading test
-	rd.models.back()->setMesh(reinterpret_cast<MeshResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/meshes/teapot.rmmesh", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of teapot.RMMesh from zip took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-
-	/*
-	* PNG
-	*/
-	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// PNG Loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage.png", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage.png took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// PNG in Zip loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage.png", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage.png from zip took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-
-	/*
-	* JPG
-	*/
-	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// JPG Loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.jpg", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage1.jpg took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// JPG in Zip loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.jpg", false)));
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -100.f, 0.f));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage1.jpg from zip took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-
-	/*
-	* RMTex
-	*/
-	/*rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// OBJ Loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/textures/testImage1.rmtex", false)));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage1.rmtex took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	start = std::chrono::high_resolution_clock::now();
-	// OBJ in Zip loading test
-	rd.models.back()->setTexture(reinterpret_cast<TextureResource*>(rm.load("Assets/AssetsPackage.zip/AssetsPackage/textures/testImage1.rmtex", false)));
-	timeTaken = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-	debugMsg = std::string("Loading of testImage1.rmtex from zip took: " + std::to_string(timeTaken) + "ms.");
-	RM_DEBUG_MESSAGE(debugMsg, 0);
-
-	/*
-	*	Thread-safety
-	*/
-	// Test thread-safety on normal loading
-	/*std::atomic_int aInt = 0;
-	int numPtrs = 2;
-	std::vector<Resource*> resPtrs(numPtrs);
-	auto threadFunc = [&rm, &aInt, &resPtrs](const char* path) {
-		resPtrs[aInt++] = rm.load(path, false);
-	};
-	std::thread t1(threadFunc, "Assets/meshes/teapot.obj");
-	std::thread t2(threadFunc, "Assets/meshes/teapot.rmmesh");
-	t1.join();
-	t2.join();
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->setMeshNoDeref(resPtrs[0]);
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -15.f));
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->setMeshNoDeref(resPtrs[1]);
-	rd.models.back()->getTransform().translate(HMM_Vec3(0.f, -3.f, -15.f));
-
-	// Test thread-safety on async loading
-	auto threadAsyncFunc = [&rm, &aInt, &resPtrs](const char* path, std::function<void(Resource*)> callback) {
-		rm.asyncLoad(path, callback);
-	};
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, 0.f, -15.f));
-	std::thread t3(threadAsyncFunc, "Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->getTransform().translate(HMM_Vec3(-2.f, 0.f, -15.f));
-	std::thread t4(threadAsyncFunc, "Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
-	t3.join();
-	t4.join();
-
-
-	// Append a bunch of async asset loading jobs
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->getTransform().translate(HMM_Vec3(-2.f, -3.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-nonormals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
-	rd.models.push_back(RM_NEW_PERSISTENT(Model));
-	rd.models.back()->getTransform().translate(HMM_Vec3(2.f, -7.f, -10.f));
-	rm.asyncLoad("Assets/meshes/cow-normals.obj", std::bind(&Model::setMeshCallback, rd.models.back(), std::placeholders::_1));
-	rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, rd.models.back(), std::placeholders::_1));
-
-	/*
-		End of testcases
-	*/
-
-}
-
 void initIMGUIRenderData() {
 	// input forwarding
 	d3d11_mouse_pos([](float x, float y) { ImGui::GetIO().MousePos = ImVec2(x, y); });
@@ -528,31 +352,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	ResourceManager &rm = ResourceManager::getInstance();
 
-	// Additional tests
-	//loadingTests(resourceData);
-
 	bool keepRunning = true;
-
-
-
-	//MemoryTracking thread
-	/*auto allocatedSpaceUpdateFunction = [&keepRunning]() {
-		MemoryManager& memMngr = MemoryManager::getInstance();
-
-		auto allocatedSpace = memMngr.getAllocatedSpace();
-		std::vector<std::vector<bool>> stacks(1);
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-		// Update the vectors of the GUI
-		while (keepRunning) {
-			auto allocatedSpace = memMngr.getAllocatedSpace();
-			memMngr.updateAllocatedSpace();
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));
-		}
-	};*/
-
-	//std::thread memoryTrackingThread(allocatedSpaceUpdateFunction);
-
 
 	/*
 		SOKOL RENDERING
@@ -621,29 +421,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		hmm_mat4 view = HMM_LookAt(HMM_Vec3(renderData.camEye.X, renderData.camEye.Y, renderData.camEye.Z), renderData.camCenter, renderData.camUp);
 		hmm_mat4 view_proj = HMM_MultiplyMat4(renderData.proj, view);
 		renderData.vsParams.vp = view_proj;
-		//camEye = HMM_MultiplyMat4ByVec4(HMM_Rotate(1.f, camUp), camEye);
 
 		/* draw frame */
 		sg_begin_default_pass(&renderData.pass_action, d3d11_width(), d3d11_height());
-
-		//renderData.sunDir.rotateAroundX(0.3f);
-		//renderData.vsParams.sunDir = HMM_MultiplyMat4ByVec4(renderData.sunDir.getMatrix(), renderData.sunDirVec);
 
 		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(10000)) {
 
 			RM_DEBUG_MESSAGE("----------CLEARING----------", 0);
 
-			//for (auto job : activeJobs)
-				//rm.removeAsyncJob(job);
-			//rm.removeAllAsyncJobs();
-			//rm.switchDoingStuff();
 			rm.clearResourceManager();
 			activeJobs.clear();
 
 			for (auto m : resourceData.models)
 				m->~Model();
 			resourceData.models.clear();
-			//rm.clearResourceMap();
 
 			RM_DEBUG_MESSAGE("----------DONE CLEARING----------", 0);
 			RM_DEBUG_MESSAGE("----------INIT----------", 0);
@@ -679,7 +470,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			resourceData.models.back()->getTransform().setScale(HMM_Vec3(4.f, 4.f, 4.f));
 			resourceData.models.back()->getTransform().rotateAroundY(65.f);
 			activeJobs.push_back(rm.asyncLoad("Assets/meshes/shelbyEdited.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-			//activeJobs.push_back(rm.asyncLoad("Assets/textures/chalet.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 			RM_DEBUG_MESSAGE("----------DONE INIT----------", 0);
 
@@ -716,8 +506,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	*/
 
 	keepRunning = false;
-	
-	//memoryTrackingThread.join();
 
 	MemoryManager::getInstance().cleanUp();
 
