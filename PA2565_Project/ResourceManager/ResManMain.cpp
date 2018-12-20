@@ -38,6 +38,8 @@ struct RenderData {
 	hmm_vec4 camEye;
 	hmm_vec3 camUp;
 	hmm_mat4 proj;
+	Transform sunDir;
+	hmm_vec4 sunDirVec;
 	vs_params_t vsParams;
 	sg_pass_action pass_action;
 	sg_draw_state drawState;
@@ -58,7 +60,7 @@ void initMemMngr() {
 	// Persistent stack
 	stackInstances.push_back(StackInstance{ megabyte / 512 }); // 1 megabyte
 	// Function stack
-	stackInstances.push_back(StackInstance{ megabyte }); // 1 megabyte
+	stackInstances.push_back(StackInstance{ megabyte * 128 }); // 1 megabyte
 
 	std::vector<PoolInstance> poolInstances;
 	unsigned int size = 64; // The size of a 4x4 matrix of floats
@@ -154,13 +156,15 @@ RenderData initRenderer() {
 
 	float rx = 0.0f, ry = 0.0f;
 
-	auto sunDirVec = HMM_Vec4(0.f, -1.f, 0.f, 0.f);
-	data.vsParams.sunDir = sunDirVec;
+	data.sunDirVec = HMM_Vec4(0.f, 1.f, 0.f, 1.f);
+	data.vsParams.sunDir = data.sunDirVec;
 
 	data.drawState = { 0 };
 	data.drawState.pipeline = pip;
 
 	std::srand(std::time(nullptr));
+
+	data.sunDir = Transform();
 
 	return data;
 }
@@ -410,10 +414,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			/* draw frame */
 			sg_begin_default_pass(&renderData.pass_action, d3d11_width(), d3d11_height());
 
-			//sunDir.rotateAroundX(0.3f);
-			//vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
+			//renderData.sunDir.rotateAroundX(0.3f);
+			//renderData.vsParams.sunDir = HMM_MultiplyMat4ByVec4(renderData.sunDir.getMatrix(), renderData.sunDirVec);
 			
-			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(1000)) {
+			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(10000)) {
 				
 				RM_DEBUG_MESSAGE("----------CLEARING----------", 0);
 
@@ -436,25 +440,34 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(10.f, -8.f, -20.f));
+				resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
 				activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-				//activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(-10.f, -8.f, -20.f));
-				RM_DEBUG_MESSAGE("----------", 0);
-				activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-				//activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+				resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
 				resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, 0.f, -20.f));
-				RM_DEBUG_MESSAGE("----------", 0);
+				resourceData.models.back()->getTransform().rotateAroundX(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundY(static_cast<float>((std::rand() % 180)));
+				resourceData.models.back()->getTransform().rotateAroundZ(static_cast<float>((std::rand() % 180)));
 				activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-				//activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+				activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				resourceData.models.push_back(RM_NEW_PERSISTENT(Model));
-				resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, -17.f, -20.f));
-				activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
-				//activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage.png", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
+				resourceData.models.back()->getTransform().translate(HMM_Vec3(0.f, -20.f, -40.f));
+				resourceData.models.back()->getTransform().setScale(HMM_Vec3(4.f, 4.f, 4.f));
+				resourceData.models.back()->getTransform().rotateAroundY(65.f);
+				activeJobs.push_back(rm.asyncLoad("Assets/meshes/shelbyEdited.obj", std::bind(&Model::setMeshCallback, resourceData.models.back(), std::placeholders::_1)));
+				//activeJobs.push_back(rm.asyncLoad("Assets/textures/chalet.jpg", std::bind(&Model::setTexCallback, resourceData.models.back(), std::placeholders::_1)));
 
 				RM_DEBUG_MESSAGE("----------DONE INIT----------", 0);
 
@@ -462,7 +475,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 			float index = 0.1f;
 			for (auto model : resourceData.models) {
-				model->getTransform().rotateAroundY(5.f);
+				model->getTransform().rotateAroundY(2.f);
 				model->draw(renderData.drawState, renderData.vsParams);
 			}
 
