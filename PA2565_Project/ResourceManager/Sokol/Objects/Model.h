@@ -2,6 +2,7 @@
 #define _RM_MODEL_
 
 #include <vector>
+#include <mutex>
 
 #include "../../Defines.h"
 #include "Transform.hpp"
@@ -17,6 +18,8 @@ private:
 	Transform m_transform;
 	unsigned int m_vertexCount;
 	unsigned int m_indexCount;
+
+	std::mutex tempMutex;
 
 public:
 	Model();

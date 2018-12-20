@@ -22,7 +22,7 @@ Resource* PNGLoader::load(const char* path, const long GUID)
 
 	// 'decode' both checks for error and assigns values to 'image', 'width, and 'height'
 	if (unsigned int error = lodepng::decode(image, width, height, filePath.c_str())) {
-		RM_DEBUG_MESSAGE(std::to_string(error) + lodepng_error_text(error) + " at filePath: " + path, 0);
+		RM_DEBUG_MESSAGE(std::to_string(error) + lodepng_error_text(error) + " at filePath: " + path, 1);
 	}
 	else {
 		// Fix size (VRAM vs RAM)

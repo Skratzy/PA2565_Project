@@ -73,14 +73,7 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	/// For GLUT ---------------------------
 	// calculate the total indice count so that we can determine percentage completed
 	GlutManager& glut = GlutManager::getInstance();
-	int indiceCount = 0;
-	for (auto& it : shapes) {
-		indiceCount += it.mesh.indices.size();
-	}
-	std::vector<bool> progress;
-	for (int i = 0; i < indiceCount; i++) {
-		progress.push_back(false);
-	}
+	std::vector<bool> progress(numIndices, false);
 	int arrayIndex = glut.addAsyncArray(progress);
 	/// For GLUT ---------------------------
 

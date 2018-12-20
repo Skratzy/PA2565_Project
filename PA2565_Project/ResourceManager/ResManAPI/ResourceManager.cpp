@@ -17,40 +17,54 @@ void ResourceManager::asyncLoadStart()
 		std::unique_lock<std::mutex> lock(m_asyncMutex);
 		if(m_asyncResJobs.size() == 0 && m_running)
 			m_cond.wait(lock);
+		{
+			// Critical region (If jobs are getting cleared)
+			std::lock_guard<std::mutex> jobsClearingLock(m_clearJobsMutex);
 
-		// Critical region
-		if (m_asyncResJobs.size() > 0 && m_running) {
-			needsCleaning = true;
-			std::cout << "Started Async Loading" << std::endl;
-			// Get the GUID for the next resource job
-			long GUID = m_asyncJobQueue.front();
-			m_asyncJobQueue.pop();
-			// Find the job
-			auto currJob = m_asyncResJobs.find(GUID);
-			Resource* res = load(currJob->second.filepath, true);
-			{
-				std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
-				// Runs through all callbacks for the current job
-				for (auto callback : currJob->second.callbacks) {
-					// Increase the reference to the resource
-					res->refer();
+			if (m_asyncResJobs.size() > 0 && m_running) {
+				needsCleaning = true;
+				std::cout << "Started Async Loading" << std::endl;
+				// Get the GUID for the next resource job
+				long GUID = m_asyncJobQueue.front();
+				m_asyncJobQueue.pop();
+				// Find the job
+				auto currJob = m_asyncResJobs.find(GUID);
+				Resource* res = load(currJob->second.filepath, true);
+				{
+					std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
+					auto size = currJob->second.callbacks.size();
+					for (int i = 0; i < size; i++) {
+						// If the job should still be performed, run the job
+						if (currJob->second.callbacks[i].run) {
+							// Increase the reference count of the resource
+							res->refer();
+							currJob->second.callbacks[i].callback(res);
+						}
+					}
+					/*// Runs through all callbacks for the current job
+					for (auto callback : currJob->second.callbacks) {
 
-					// If the job should still be performed, run the job
-					if(callback.run)
-						callback.callback(res);
+						// If the job should still be performed, run the job
+						if (callback.run) {
+							// Increase the reference count of the resource
+							res->refer();
+							callback.callback(res);
+						}
+					}*/
+					// Decreases the reference from the resource (the initial load)
+					decrementReference(res->getGUID());
+					//res->derefer();
+					// Remove the finished job from the map
+					m_asyncResJobs.erase(currJob);
+					RM_DEBUG_MESSAGE("Done with async job", 0);
 				}
-				// Decreases the reference from the resource (the initial load)
-				res->derefer();
-				// Remove the finished job from the map
-				m_asyncResJobs.erase(currJob);
-				critLock.unlock();
 			}
+
 		}
 		if (needsCleaning) {
 			GlutManager::getInstance().cleanAsyncArrays();
 			needsCleaning = false;
 		}
-		lock.unlock();
 	}
 }
 
@@ -87,6 +101,21 @@ void ResourceManager::cleanup()
 		RES.second->~Resource();
 		//RM_FREE(RES.second);
 	}
+}
+
+void ResourceManager::clearResourceManager()
+{
+	std::lock_guard<std::mutex> lock(m_clearJobsMutex);
+
+	while (m_asyncJobQueue.size() > 0)
+		m_asyncJobQueue.pop();
+
+	m_asyncResJobs.clear();
+
+	for (auto res : m_resources) {
+		res.second->~Resource();
+	}
+	m_resources.clear();
 }
 
 
@@ -229,17 +258,23 @@ ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std
 
 void ResourceManager::removeAsyncJob(AsyncJobIndex index)
 {
-	std::unique_lock<std::mutex> critLock(m_asyncLoadMutex);
+	std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 	auto job = m_asyncResJobs.find(index.GUID);
 	// if the job was found, make sure the job isn't ran
-	if (job != m_asyncResJobs.end()) {
+	if (job != m_asyncResJobs.end())
 		job->second.callbacks.at(index.IndexOfCallback).run = false;
-	}
+}
+
+void ResourceManager::removeAllAsyncJobs()
+{
+	std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
+	for (auto& job : m_asyncResJobs)
+		for (auto& callback : job.second.callbacks)
+			callback.run = false;
 }
 
 void ResourceManager::decrementReference(long key)
 {
-	std::unique_lock<std::mutex> lock(m_derefMutex);
 	auto resource = m_resources.find(key);
 	if (resource != m_resources.end()) {
 		if (resource->second->derefer() == 0)
