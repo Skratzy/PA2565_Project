@@ -413,7 +413,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			//sunDir.rotateAroundX(0.3f);
 			//vsParams.sunDir = HMM_MultiplyMat4ByVec4(sunDir.getMatrix(), sunDirVec);
 			
-			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(1000)) {
+			if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) > std::chrono::milliseconds(6000)) {
 				
 				RM_DEBUG_MESSAGE("----------CLEARING----------", 0);
 
