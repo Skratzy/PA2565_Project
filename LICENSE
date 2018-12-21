@@ -22,8 +22,8 @@ SOFTWARE.
 
 Libraries used (None of these have been altered and we have not written these libraries.)
 libzip - Copyright (C) 1999-2018 Dieter Baron and Thomas Klausner
-freeglut - http://freeglut.sourceforge.net/
 libjpeg - http://libjpeg.sourceforge.net/
 lodepng - Copyright (c) 2005-2018 Lode Vandevenne
 cimg - http://cimg.eu/
 sokolgfx - Copyright (c) 2018 Andre Weissflog
+imgui - Copyright (c) 2014-2018 Omar Cornut
