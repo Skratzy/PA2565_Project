@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 Libraries used (None of these have been altered and we have not written these libraries.)
-
 libzip - Copyright (C) 1999-2018 Dieter Baron and Thomas Klausner
 freeglut - http://freeglut.sourceforge.net/
 libjpeg - http://libjpeg.sourceforge.net/
