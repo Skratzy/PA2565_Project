@@ -120,9 +120,12 @@ void* MemoryManager::poolAllocate(unsigned int sizeBytes) {
 void MemoryManager::deallocateSinglePool(void* ptr, unsigned int sizeOfAlloc)
 {
 	// We look for which pool the object exists in (ordered: smallest pool -> biggest pool)
-	for (unsigned int i = 0; i < m_pools.size(); i++)
-		if (sizeOfAlloc <= m_pools.at(i)->getEntrySize())
+	for (unsigned int i = 0; i < m_pools.size(); i++) {
+		if (sizeOfAlloc <= m_pools.at(i)->getEntrySize()) {
 			m_pools.at(i)->deallocateSingle(ptr); // We then deallocate it
+			break;
+		}
+	}
 }
 
 void MemoryManager::deallocateAllPools()
