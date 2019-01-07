@@ -111,9 +111,6 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 			lineIndex = 0;
 			// Per color, read the color until a comma is met, last element should be a newline
 			for (int currentColor = COLOR::RED; currentColor < COLOR::COUNT; currentColor++) {
-				// Fetch all the data until a newline is met
-				unsigned char character;
-
 				for (; lineIndex < lineData.size();) {
 					string color;
 					if (lineData.at(lineIndex) != ',') {
@@ -149,7 +146,10 @@ Resource * RMTextureLoader::load(const char * path, const long GUID)
 	unsigned int size = sizeof(TextureResource);// +sizeof(unsigned int) * image.size();
 	// Attach the formatted image to a textureresource
 	Resource* res = new (RM_MALLOC_PERSISTENT(size)) TextureResource(width, height, imageDataPtr, GUID);
-	res->setSize(size);
+	// Size on DRAM
+	res->setSizeCPU(size);
+	// Size on VRAM
+	res->setSizeGPU(width * height * sizeof(unsigned char) * 4);
 
 	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX, marker);
 	

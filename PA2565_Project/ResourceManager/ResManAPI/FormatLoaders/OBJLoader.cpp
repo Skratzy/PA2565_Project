@@ -107,8 +107,13 @@ Resource* OBJLoader::load(const char* path, const long GUID)
 	}
 
 	unsigned int sizeOnRAM = sizeof(MeshResource);
-	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRAM)) MeshResource(verticesDataPtr, indicesPtr, numIndices * 8, numIndices, GUID);
-	meshToBeReturned->setSize(sizeOnRAM);
+	// 8 floats per vertex and currently 1 vertex per index (simple loading)
+	unsigned int verticesDataSize = numIndices * 8;
+	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRAM)) MeshResource(verticesDataPtr, indicesPtr, verticesDataSize, numIndices, GUID);
+	// Size on DRAM
+	meshToBeReturned->setSizeCPU(sizeOnRAM);
+	// Size on VRAM
+	meshToBeReturned->setSizeGPU(verticesDataSize * sizeof(float) + numIndices * sizeof(uint32_t));
 	/// ----------------------------------------------------
 
 	// ResourceManager::load() will never get here in more than one thread at a time

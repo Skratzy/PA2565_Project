@@ -29,7 +29,10 @@ Resource* PNGLoader::load(const char* path, const long GUID)
 		unsigned int size = sizeof(TextureResource);// +sizeof(unsigned int) * image.size();
 		// Attach the formatted image to a textureresource
 		resource = new (RM_MALLOC_PERSISTENT(size)) TextureResource(width, height, image.data(), GUID);
-		resource->setSize(size);
+		// Size on DRAM
+		resource->setSizeCPU(size);
+		// Size on VRAM
+		resource->setSizeGPU(width * height * sizeof(unsigned char) * 4);
 	}
 
 	if (loadZipped) {

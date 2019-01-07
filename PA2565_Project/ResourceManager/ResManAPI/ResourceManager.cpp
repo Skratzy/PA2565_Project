@@ -30,7 +30,7 @@ void ResourceManager::asyncLoadStart()
 				{
 					std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 					auto size = currJob->second.callbacks.size();
-					for (int i = 0; i < size; i++) {
+					for (unsigned int i = 0; i < size; i++) {
 						// If the job should still be performed, run the job
 						if (currJob->second.callbacks[i].run) {
 							// Increase the reference count of the resource
@@ -54,8 +54,10 @@ void ResourceManager::asyncLoadStart()
 
 ResourceManager::ResourceManager()
 {
-	m_capacity = 0;
-	m_memUsage = 0;
+	m_capacityCPU = 0;
+	m_capacityGPU = 0;
+	m_memUsageCPU = 0;
+	m_memUsageGPU = 0;
 	m_initialized = false;
 	m_running = true;
 
@@ -100,12 +102,16 @@ void ResourceManager::clearResourceManager()
 		res.second->~Resource();
 	}
 	m_resources.clear();
+
+	m_memUsageCPU = 0;
+	m_memUsageGPU = 0;
 }
 
 
-void ResourceManager::init(const unsigned int capacity) {
+void ResourceManager::init(const unsigned int capacityCPU, const unsigned int capacityGPU) {
 	if (!m_initialized) {
-		m_capacity = capacity;
+		m_capacityCPU = capacityCPU;
+		m_capacityGPU = capacityGPU;
 		m_initialized = true;
 	}
 }
@@ -151,22 +157,38 @@ Resource * ResourceManager::load(const char* path)
 
 					res->setPath(path);
 
-					// Update memory usage
-					m_memUsage += res->getSize();
-					if (m_memUsage > m_capacity) {
-#ifdef _DEBUG
-						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit. (" + std::to_string(m_memUsage / (1024)) + "KB / " + std::to_string(m_capacity / (1024)) + "KB) (Usage / Capacity)"), 0);
-#else
-						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit. (" + std::to_string(m_memUsage / (1024)) + "KB / " + std::to_string(m_capacity / (1024)) + "KB) (Usage / Capacity)"), 0);
-						RM_DEBUG_MESSAGE("Resource in memory:", 0);
-						for (auto res : m_resources)
-							RM_DEBUG_MESSAGE("Resource GUID: (" + std::to_string(res.second->getGUID()) + ")  Path: ("+ res.second->getPath() +")  Size: (" + std::to_string(res.second->getSize()) + " byte)", 0);
-#endif
-					}
 					// Increase the reference count of the resource
 					res->refer();
 					// Add the loaded resource to the map
 					m_resources.emplace(hashedPath, res);
+
+					// Update memory usage
+					m_memUsageCPU += res->getSizeCPU();
+					
+					// DRAM Usage
+					if (m_memUsageCPU > m_capacityCPU) {
+#ifdef _DEBUG
+						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit on CPU. (" + std::to_string(m_memUsageCPU / (1024)) + "KB / " + std::to_string(m_capacityCPU / (1024)) + "KB) (Usage / Capacity)"), 0);
+#else
+						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit on CPU. (" + std::to_string(m_memUsageCPU / (1024)) + "KB / " + std::to_string(m_capacityCPU / (1024)) + "KB) (Usage / Capacity)"), 0);
+						RM_DEBUG_MESSAGE("Resource in memory:", 0);
+						for (auto res : m_resources)
+							RM_DEBUG_MESSAGE("Resource GUID: (" + std::to_string(res.second->getGUID()) + ")  Path: ("+ res.second->getPath() +")  Size: (" + std::to_string(res.second->getSizeCPU()) + " byte)", 0);
+#endif
+					}
+
+					// VRAM Usage
+					m_memUsageGPU += res->getSizeGPU();
+					if (m_memUsageCPU > m_capacityCPU) {
+#ifdef _DEBUG
+						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit on GPU. (" + std::to_string(m_memUsageGPU / (1024)) + "KB / " + std::to_string(m_capacityGPU / (1024)) + "KB) (Usage / Capacity)"), 0);
+#else
+						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit on GPU. (" + std::to_string(m_memUsageGPU / (1024)) + "KB / " + std::to_string(m_capacityGPU / (1024)) + "KB) (Usage / Capacity)"), 0);
+						RM_DEBUG_MESSAGE("Resource in memory:", 0);
+						for (auto res : m_resources)
+							RM_DEBUG_MESSAGE("Resource GUID: (" + std::to_string(res.second->getGUID()) + ")  Path: (" + res.second->getPath() + ")  Size: (" + std::to_string(res.second->getSizeGPU()) + " byte)", 0);
+#endif
+					}
 
 				}
 			}
@@ -259,6 +281,24 @@ void ResourceManager::registerFormatLoader(FormatLoader* formatLoader)
 {
 	// Put the new format loader in the vector
 	m_formatLoaders.emplace_back(formatLoader);
+}
+
+unsigned int ResourceManager::getMemUsageCPU()
+{
+	return m_memUsageCPU;
+}
+
+unsigned int ResourceManager::getCapacityCPU() {
+	return m_capacityCPU;
+}
+
+unsigned int ResourceManager::getMemUsageGPU()
+{
+	return m_memUsageGPU;
+}
+
+unsigned int ResourceManager::getCapacityGPU() {
+	return m_capacityGPU;
 }
 
 const std::map<long, Resource*>& ResourceManager::getResources() const

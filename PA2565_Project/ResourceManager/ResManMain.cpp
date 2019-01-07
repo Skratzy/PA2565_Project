@@ -177,8 +177,7 @@ RenderData initRenderer() {
 
 	data.drawState = { 0 };
 	data.drawState.pipeline = pip;
-
-	std::srand(std::time(nullptr));
+	std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 	data.sunDir = Transform();
 
@@ -189,7 +188,7 @@ ResourceData initResMngr() {
 	ResourceData rd;
 	rd.marker = 0;
 	ResourceManager &rm = ResourceManager::getInstance();
-	rm.init(10);
+	rm.init(1024, 1024 * 1024 * 1024);
 
 	// Roughly 25 bytes per loader (vector with strings of supported formats per formatloader)
 	// Gets deleted in the resource manager
@@ -413,9 +412,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		}
 
 		// Displays the window holding the resources contained within the resource manager
-		ImGui::SetNextWindowSize(ImVec2(400, 150), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(400, 260), ImGuiSetCond_FirstUseEver);
 		ImGui::SetNextWindowPos(ImVec2(sokol_width - 400, 0), ImGuiSetCond_FirstUseEver);
 		ImGui::Begin("Resources in System");
+		
+		header = "Memory Usage CPU - Size/Capacity (" + std::to_string(rm.getMemUsageCPU()) + "B / " + std::to_string(rm.getCapacityCPU()) + "B)";
+		ImGui::Text(header.c_str());
+		ImGui::ProgressBar(static_cast<float>(rm.getMemUsageCPU()) / static_cast<float>(rm.getCapacityCPU()));
+
+		header = "Memory Usage GPU - Size/Capacity (" + std::to_string(rm.getMemUsageGPU() / (1024 * 1024)) + "MB / " + std::to_string(rm.getCapacityGPU() / (1024 * 1024)) + "MB)";
+		ImGui::Text(header.c_str());		
+		ImGui::ProgressBar(static_cast<float>(rm.getMemUsageGPU()) / static_cast<float>(rm.getCapacityGPU()));
+		
 		ImGui::Text(resString.c_str());
 		ImGui::End();
 

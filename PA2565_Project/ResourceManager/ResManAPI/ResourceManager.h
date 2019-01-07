@@ -21,8 +21,11 @@ private:
 	
 	std::vector<FormatLoader*> m_formatLoaders;
 	
-	unsigned int m_capacity;
-	unsigned int m_memUsage;
+	unsigned int m_capacityCPU;
+	unsigned int m_memUsageCPU;
+
+	unsigned int m_capacityGPU;
+	unsigned int m_memUsageGPU;
 	
 	std::mutex m_mutex; 
 	
@@ -72,7 +75,7 @@ public:
 	void cleanup();
 	void clearResourceManager();
 
-	void init(const unsigned int capacity);
+	void init(const unsigned int capacityCPU, const unsigned int capacityGPU);
 
 	Resource* load(const char* path);
 	AsyncJobIndex asyncLoad(const char* path, std::function<void(Resource*)> callback);
@@ -83,6 +86,11 @@ public:
 	void decrementReference(long key);
 
 	void registerFormatLoader(FormatLoader* formatLoader);
+
+	unsigned int getMemUsageCPU();
+	unsigned int getCapacityCPU();
+	unsigned int getMemUsageGPU();
+	unsigned int getCapacityGPU();
 
 	const std::map<long, Resource*>& getResources() const;
 	//void incrementReference(long key); SHOULDN'T BE NEEDED (done when loading already existing)

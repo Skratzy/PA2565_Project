@@ -92,7 +92,10 @@ Resource* RMMeshLoader::load(const char* path, const long GUID)
 
 	unsigned int sizeOnRam = sizeof(MeshResource);
 	MeshResource* meshToBeReturned = new (RM_MALLOC_PERSISTENT(sizeOnRam)) MeshResource(verticesDataPtr, indicesPtr, numberOfVertices, numberOfIndices, GUID);
-	meshToBeReturned->setSize(sizeOnRam);
+	// Size on DRAM
+	meshToBeReturned->setSizeCPU(sizeOnRam);
+	// Size on VRAM
+	meshToBeReturned->setSizeGPU(numberOfVertices * sizeof(float) + numberOfIndices * sizeof(uint32_t));
 
 	// Clear everything we've allocated during the function
 	MemoryManager::getInstance().deallocateStack(FUNCTION_STACK_INDEX, marker);
