@@ -225,23 +225,6 @@ void initIMGUIRenderData() {
 	io.IniFilename = nullptr;
 	io.RenderDrawListsFn = imgui_draw_cb;
 	io.Fonts->AddFontDefault();
-	io.KeyMap[ImGuiKey_Tab] = VK_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
-	io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
-	io.KeyMap[ImGuiKey_Home] = VK_HOME;
-	io.KeyMap[ImGuiKey_End] = VK_END;
-	io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
-	io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
-	io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
-	io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
-	io.KeyMap[ImGuiKey_A] = 'A';
-	io.KeyMap[ImGuiKey_C] = 'C';
-	io.KeyMap[ImGuiKey_V] = 'V';
-	io.KeyMap[ImGuiKey_X] = 'X';
-	io.KeyMap[ImGuiKey_Y] = 'Y';
-	io.KeyMap[ImGuiKey_Z] = 'Z';
 
 	const int MaxVertices = (1 << 16);
 	const int MaxIndices = MaxVertices * 3;
@@ -487,6 +470,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 			RM_DEBUG_MESSAGE("----------INIT----------", 0);
 
+			// Async jobs creation
+			// Uses a path and a callback function to a model
 			activeJobs.push_back(rm.asyncLoad("Assets/meshes/teapot.obj", std::bind(&Model::setMeshCallback, resourceData.models[0], std::placeholders::_1)));
 			activeJobs.push_back(rm.asyncLoad("Assets/textures/testImage1.jpg", std::bind(&Model::setTexCallback, resourceData.models[0], std::placeholders::_1)));
 
