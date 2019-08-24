@@ -8,17 +8,15 @@
 	PRIVATE FUNCTIONS
 +-+-+-+-+-+-+-+-+-+-+-+*/
 
-void* MemoryManager::getMem(unsigned int sizeBytes)
-{
+void* MemoryManager::getMem(unsigned int sizeBytes) {
 	return calloc(1, sizeBytes);
 }
 
-void MemoryManager::addPool(PoolInstance instance)
-{
+void MemoryManager::addPool(PoolInstance instance) {
 	PoolAllocator* temp = new PoolAllocator(
-		getMem(instance.sizeBytesEachEntry * instance.numEntries), 
-		instance.sizeBytesEachEntry, 
-		instance.numEntries, 
+		getMem(instance.sizeBytesEachEntry * instance.numEntries),
+		instance.sizeBytesEachEntry,
+		instance.numEntries,
 		instance.numQuadrants
 	);
 	std::vector<PoolAllocator*>::iterator it = m_pools.begin();
@@ -40,8 +38,7 @@ void MemoryManager::addPool(PoolInstance instance)
 	}
 }
 
-void MemoryManager::addStack(StackInstance instance)
-{
+void MemoryManager::addStack(StackInstance instance) {
 	m_stacks.push_back(new StackAllocator(getMem(instance.sizeBytes), instance.sizeBytes));
 }
 
@@ -53,16 +50,12 @@ void MemoryManager::addStack(StackInstance instance)
 	 PUBLIC FUNCTIONS
 +-+-+-+-+-+-+-+-+-+-+-+*/
 
-MemoryManager::MemoryManager()
-{
-}
-MemoryManager::~MemoryManager()
-{
+MemoryManager::MemoryManager() {}
+MemoryManager::~MemoryManager() {
 	cleanUp();
 }
 
-void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const std::vector<PoolInstance>& poolInstances)
-{
+void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const std::vector<PoolInstance>& poolInstances) {
 	int currIndex = 0;
 	for (auto SI : stackInstances) {
 		addStack(SI);
@@ -84,11 +77,10 @@ void MemoryManager::init(const std::vector<StackInstance>& stackInstances, const
 	}
 }
 
-void * MemoryManager::stackAllocate(unsigned int sizeBytes, unsigned int indexOfStack)
-{
+void * MemoryManager::stackAllocate(unsigned int sizeBytes, unsigned int indexOfStack) {
 	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
 		RM_DEBUG_MESSAGE("MemoryManager::stackAllocate: Index was out of bounds.", 1);
-	
+
 	void* toReturn;
 	try {
 		toReturn = m_stacks[indexOfStack]->allocate(sizeBytes);
@@ -117,8 +109,7 @@ void* MemoryManager::poolAllocate(unsigned int sizeBytes) {
 	return ptrToAllocation;
 }
 
-void MemoryManager::deallocateSinglePool(void* ptr, unsigned int sizeOfAlloc)
-{
+void MemoryManager::deallocateSinglePool(void* ptr, unsigned int sizeOfAlloc) {
 	// We look for which pool the object exists in (ordered: smallest pool -> biggest pool)
 	for (unsigned int i = 0; i < m_pools.size(); i++) {
 		if (sizeOfAlloc <= m_pools.at(i)->getEntrySize()) {
@@ -128,38 +119,33 @@ void MemoryManager::deallocateSinglePool(void* ptr, unsigned int sizeOfAlloc)
 	}
 }
 
-void MemoryManager::deallocateAllPools()
-{
+void MemoryManager::deallocateAllPools() {
 	for (unsigned int i = 0; i < m_pools.size(); i++)
 		m_pools.at(i)->deallocateAll();
 }
 
-void MemoryManager::deallocateStack(unsigned int indexOfStack)
-{
+void MemoryManager::deallocateStack(unsigned int indexOfStack) {
 	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
 		RM_DEBUG_MESSAGE("MemoryManager::deallocateStack: Index was out of bounds.", 1);
 
 	m_stacks[indexOfStack]->deallocateAll();
 }
 
-void MemoryManager::deallocateStack(unsigned int indexOfStack, Marker toMarker)
-{
+void MemoryManager::deallocateStack(unsigned int indexOfStack, Marker toMarker) {
 	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
 		RM_DEBUG_MESSAGE("MemoryManager::deallocateStack: Index was out of bounds.", 1);
 
 	m_stacks[indexOfStack]->clearToMarker(toMarker);
 }
 
-Marker MemoryManager::getStackMarker(unsigned int indexOfStack)
-{
+Marker MemoryManager::getStackMarker(unsigned int indexOfStack) {
 	if (indexOfStack < 0 || indexOfStack > m_stacks.size() - 1)
 		RM_DEBUG_MESSAGE("MemoryManager::getStackMarker: Index was out of bounds.", 1);
 
 	return m_stacks[indexOfStack]->getMarker();
 }
 
-void MemoryManager::updateAllocatedSpace()
-{
+void MemoryManager::updateAllocatedSpace() {
 	for (unsigned int i = 0; i < m_stacks.size(); i++) {
 		// Updates multiple 'vector<bool>' (used to visualize memory consumption)
 		m_currMemUsage.stacks[i] = m_stacks[i]->getUsedMemory();
@@ -171,25 +157,21 @@ void MemoryManager::updateAllocatedSpace()
 	}
 }
 
-MemoryUsage& MemoryManager::getAllocatedSpace()
-{
+MemoryUsage& MemoryManager::getAllocatedSpace() {
 	return m_currMemUsage;
 }
 
-void MemoryManager::updateAllocatedSpacePercentage()
-{
+void MemoryManager::updateAllocatedSpacePercentage() {
 	for (unsigned int i = 0; i < m_stacks.size(); i++) {
 		m_currMemUsagePercentage.stacks[i] = m_stacks[i]->getUsedMemoryPercentage();
 	}
 }
 
-MemoryUsagePercentage & MemoryManager::getAllocatedSpacePercentage()
-{
+MemoryUsagePercentage & MemoryManager::getAllocatedSpacePercentage() {
 	return m_currMemUsagePercentage;
 }
 
-void MemoryManager::cleanUp()
-{
+void MemoryManager::cleanUp() {
 	size_t loopCount;
 
 	loopCount = m_pools.size();
@@ -200,7 +182,7 @@ void MemoryManager::cleanUp()
 	m_pools.resize(0);
 
 	for (unsigned int i = 0; i < m_stacks.size(); i++)
-		if(m_stacks[i] != nullptr)
+		if (m_stacks[i] != nullptr)
 			delete m_stacks[i];
 	m_stacks.clear();
 	m_stacks.resize(0);

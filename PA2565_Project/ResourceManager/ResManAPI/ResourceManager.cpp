@@ -9,24 +9,24 @@
 #include <ziplib/zip.h>
 
 // Only a single thread will ever run this function
-void ResourceManager::asyncLoadStart()
-{
+void ResourceManager::asyncLoadStart() {
 	while (m_running) {
 		std::unique_lock<std::mutex> lock(m_asyncMutex);
-		if(m_asyncResJobs.size() == 0 && m_running)
+		if (m_asyncResJobs.size() == 0 && m_running)
 			m_cond.wait(lock);
 		{
 			// Critical region (If jobs are getting cleared)
 			std::lock_guard<std::mutex> jobsClearingLock(m_clearJobsMutex);
 
 			if (m_asyncResJobs.size() > 0 && m_running) {
-				std::cout << "Started Async Loading" << std::endl;
 				// Get the GUID for the next resource job
 				long GUID = m_asyncJobQueue.front();
 				m_asyncJobQueue.pop();
 				// Find the job
 				auto currJob = m_asyncResJobs.find(GUID);
-				Resource* res = load(currJob->second.filepath);
+				std::string filepath = currJob->second.filepath;
+				RM_DEBUG_MESSAGE("Started Async Loading of '" + filepath + "'", 0);
+				Resource* res = load(filepath.c_str());
 				{
 					std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 					auto size = currJob->second.callbacks.size();
@@ -38,13 +38,13 @@ void ResourceManager::asyncLoadStart()
 							currJob->second.callbacks[i].callback(res);
 						}
 					}
-					
+
 					// Decreases the reference from the resource (the initial load)
 					decrementReference(res->getGUID());
 					//res->derefer();
 					// Remove the finished job from the map
 					m_asyncResJobs.erase(currJob);
-					RM_DEBUG_MESSAGE("Done with async job", 0);
+					RM_DEBUG_MESSAGE("Done with async job '" + filepath + "'", 0);
 				}
 			}
 
@@ -52,8 +52,7 @@ void ResourceManager::asyncLoadStart()
 	}
 }
 
-ResourceManager::ResourceManager()
-{
+ResourceManager::ResourceManager() {
 	m_capacityCPU = 0;
 	m_capacityGPU = 0;
 	m_memUsageCPU = 0;
@@ -66,12 +65,9 @@ ResourceManager::ResourceManager()
 }
 
 
-ResourceManager::~ResourceManager()
-{
-}
+ResourceManager::~ResourceManager() {}
 
-void ResourceManager::cleanup()
-{
+void ResourceManager::cleanup() {
 	m_running = false;
 	m_cond.notify_all();
 	m_asyncLoadThread.join();
@@ -89,8 +85,7 @@ void ResourceManager::cleanup()
 	}
 }
 
-void ResourceManager::clearResourceManager()
-{
+void ResourceManager::clearResourceManager() {
 	std::lock_guard<std::mutex> lock(m_clearJobsMutex);
 
 	while (m_asyncJobQueue.size() > 0)
@@ -116,8 +111,7 @@ void ResourceManager::init(const unsigned int capacityCPU, const unsigned int ca
 	}
 }
 
-Resource * ResourceManager::load(const char* path)
-{
+Resource * ResourceManager::load(const char* path) {
 
 	Resource* res = nullptr;
 	namespace fs = std::experimental::filesystem;
@@ -164,7 +158,7 @@ Resource * ResourceManager::load(const char* path)
 
 					// Update memory usage
 					m_memUsageCPU += res->getSizeCPU();
-					
+
 					// DRAM Usage
 					if (m_memUsageCPU > m_capacityCPU) {
 #ifdef _DEBUG
@@ -173,7 +167,7 @@ Resource * ResourceManager::load(const char* path)
 						RM_DEBUG_MESSAGE(("ResourceManager::load() - Memory usage exceeds the memory limit on CPU. (" + std::to_string(m_memUsageCPU / (1024)) + "KB / " + std::to_string(m_capacityCPU / (1024)) + "KB) (Usage / Capacity)"), 0);
 						RM_DEBUG_MESSAGE("Resource in memory:", 0);
 						for (auto res : m_resources)
-							RM_DEBUG_MESSAGE("Resource GUID: (" + std::to_string(res.second->getGUID()) + ")  Path: ("+ res.second->getPath() +")  Size: (" + std::to_string(res.second->getSizeCPU()) + " byte)", 0);
+							RM_DEBUG_MESSAGE("Resource GUID: (" + std::to_string(res.second->getGUID()) + ")  Path: (" + res.second->getPath() + ")  Size: (" + std::to_string(res.second->getSizeCPU()) + " byte)", 0);
 #endif
 					}
 
@@ -198,8 +192,7 @@ Resource * ResourceManager::load(const char* path)
 	return res;
 }
 
-ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)> callback)
-{
+ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std::function<void(Resource*)> callback) {
 	long hashedPath = m_pathHasher(path);
 	Resource* res = nullptr;
 
@@ -210,7 +203,7 @@ ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std
 		res = it->second;
 		res->refer();
 		callback(res);
-		return AsyncJobIndex{0, 0};
+		return AsyncJobIndex{ 0, 0 };
 	}
 	else {
 		// Critical region
@@ -226,7 +219,7 @@ ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std
 			callback(res);
 			return AsyncJobIndex{ 0, 0 };
 		}
-		
+
 		// Find out if the job is already queued
 		auto asyncJobsIt = m_asyncResJobs.find(hashedPath);
 		// The job already exists, push back another callback
@@ -245,8 +238,7 @@ ResourceManager::AsyncJobIndex ResourceManager::asyncLoad(const char * path, std
 	}
 }
 
-void ResourceManager::removeAsyncJob(AsyncJobIndex index)
-{
+void ResourceManager::removeAsyncJob(AsyncJobIndex index) {
 	std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 	auto job = m_asyncResJobs.find(index.GUID);
 	// if the job was found, make sure the job isn't ran
@@ -254,20 +246,17 @@ void ResourceManager::removeAsyncJob(AsyncJobIndex index)
 		job->second.callbacks.at(index.IndexOfCallback).run = false;
 }
 
-void ResourceManager::removeAllAsyncJobs()
-{
+void ResourceManager::removeAllAsyncJobs() {
 	std::lock_guard<std::mutex> critLock(m_asyncLoadMutex);
 	for (auto& job : m_asyncResJobs)
 		for (auto& callback : job.second.callbacks)
 			callback.run = false;
 }
 
-void ResourceManager::decrementReference(long key)
-{
+void ResourceManager::decrementReference(long key) {
 	auto resource = m_resources.find(key);
 	if (resource != m_resources.end()) {
-		if (resource->second->derefer() == 0)
-		{
+		if (resource->second->derefer() == 0) {
 			// Only when not using level-based handling of the memory
 			//m_memUsage -= resource->second->getSize();
 			resource->second->~Resource();
@@ -277,14 +266,12 @@ void ResourceManager::decrementReference(long key)
 	}
 }
 
-void ResourceManager::registerFormatLoader(FormatLoader* formatLoader)
-{
+void ResourceManager::registerFormatLoader(FormatLoader* formatLoader) {
 	// Put the new format loader in the vector
 	m_formatLoaders.emplace_back(formatLoader);
 }
 
-unsigned int ResourceManager::getMemUsageCPU()
-{
+unsigned int ResourceManager::getMemUsageCPU() {
 	return m_memUsageCPU;
 }
 
@@ -292,8 +279,7 @@ unsigned int ResourceManager::getCapacityCPU() {
 	return m_capacityCPU;
 }
 
-unsigned int ResourceManager::getMemUsageGPU()
-{
+unsigned int ResourceManager::getMemUsageGPU() {
 	return m_memUsageGPU;
 }
 
@@ -301,7 +287,6 @@ unsigned int ResourceManager::getCapacityGPU() {
 	return m_capacityGPU;
 }
 
-const std::map<long, Resource*>& ResourceManager::getResources() const
-{
+const std::map<long, Resource*>& ResourceManager::getResources() const {
 	return m_resources;
 }

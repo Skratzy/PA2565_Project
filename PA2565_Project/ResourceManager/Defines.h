@@ -9,6 +9,12 @@
 
 #include "../MemoryManager/MemoryManager.h"
 
+#ifdef _DEBUG
+#define RM_DEBUGGING true
+#else
+#define RM_DEBUGGING false
+#endif
+
 #define RM_ASSERT(s) assert(s)
 /*
 	s: Size in bytes
@@ -58,12 +64,12 @@ constexpr auto FUNCTION_STACK_INDEX = 1;
 	switch(l) { \
 	case 0: \
 		SetConsoleTextAttribute(stdHandle, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY); \
-		std::cerr << "WARNING: " << s << std::endl; \
+		std::clog << "WARNING: " << s << std::endl; \
 		SetConsoleTextAttribute(stdHandle, conScrBufInf.wAttributes); \
 		break; \
 	case 1:\
 		SetConsoleTextAttribute(stdHandle, BACKGROUND_RED | BACKGROUND_INTENSITY);\
-		std::cerr << "ERROR: " << s << std::endl;\
+		std::clog << "ERROR: " << s << std::endl; \
 		SetConsoleTextAttribute(stdHandle, conScrBufInf.wAttributes);\
 		abort();\
 		break;\

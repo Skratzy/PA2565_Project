@@ -424,7 +424,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		/* draw frame */
 		sg_begin_default_pass(&renderData.pass_action, d3d11_width(), d3d11_height());
 		
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime1) > std::chrono::milliseconds(10000)) {
+		auto duration = std::chrono::seconds(10);
+		
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime1) > duration) {
 
 			RM_DEBUG_MESSAGE("----------CLEARING----------", 0);
 
@@ -466,7 +468,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			startTime1 = std::chrono::high_resolution_clock::now();
 		}
 
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime2) > std::chrono::milliseconds(10000)) {
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime2) > duration) {
 
 			RM_DEBUG_MESSAGE("----------INIT----------", 0);
 
@@ -481,7 +483,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models[2], std::placeholders::_1)));
 			activeJobs.push_back(rm.asyncLoad("Assets/textures/testfile.jpg", std::bind(&Model::setTexCallback, resourceData.models[2], std::placeholders::_1)));
 
-			activeJobs.push_back(rm.asyncLoad("Assets/meshes/shelbyEdited.obj", std::bind(&Model::setMeshCallback, resourceData.models[3], std::placeholders::_1)));
+			activeJobs.push_back(rm.asyncLoad("Assets/meshes/cow-normals-test.obj", std::bind(&Model::setMeshCallback, resourceData.models[3], std::placeholders::_1)));
 
 			RM_DEBUG_MESSAGE("----------DONE INIT----------", 0);
 

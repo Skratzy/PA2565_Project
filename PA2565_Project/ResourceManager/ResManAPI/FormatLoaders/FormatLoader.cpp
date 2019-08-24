@@ -1,7 +1,9 @@
 #include "FormatLoader.h"
-#include <ziplib/zip.h>
+//#include <ziplib/zip.h>
 #include <fstream>
 #include <experimental/filesystem>
+
+#include "../../../lib/miniz/miniz.h"
 
 
 std::string FormatLoader::extractFile(const char* path, size_t check) {
@@ -14,28 +16,26 @@ std::string FormatLoader::extractFile(const char* path, size_t check) {
 	std::string pathInPackage = zipPath.substr(check + 5, zipPath.length());
 	std::string fileName = filePath.filename().string();
 	// Opening and extracting asset from package
-	int error = 0;
-	zip* archive = zip_open(zipLocation.c_str(), 0, &error);
-	if (!archive)
+	//int error = 0;
+	mz_zip_archive archive;
+	memset(&archive, 0, sizeof(archive));
+	auto status = mz_zip_reader_init_file(&archive, zipLocation.c_str(), 0);
+	if (!status) 
 		RM_DEBUG_MESSAGE("Error while trying to open zip archive: " + zipLocation, 1);
 
 
-	auto index = zip_name_locate(archive, pathInPackage.c_str(), 0);
-	zip_stat_t stat;
-	zip_stat_index(archive, index, 0, &stat);
-	void* buffer = malloc(static_cast<size_t>(stat.size));
-	zip_file* file = zip_fopen(archive, pathInPackage.c_str(), 0);
-	if (!file)
-		RM_DEBUG_MESSAGE("Libzip error: (" + std::string(zip_strerror(archive)) + ") on path: (" + pathInPackage + ").", 1);
-
-	zip_fread(file, buffer, stat.size);
+	auto index = mz_zip_reader_locate_file(&archive, pathInPackage.c_str(), "", 0);
+	mz_zip_archive_file_stat fileStat;
+	mz_zip_reader_file_stat(&archive, index, &fileStat);
+	void* buffer = malloc(static_cast<size_t>(fileStat.m_uncomp_size));
+	// TODO: Replace with extract_to_heap
+	mz_zip_reader_extract_to_mem(&archive, index, buffer, fileStat.m_uncomp_size, 0);
 
 	std::ofstream aFile;
 	aFile.open(fileName.c_str(), std::ios::out | std::ios::binary);
-	aFile.write((char*)buffer, stat.size);
+	aFile.write((char*)buffer, fileStat.m_uncomp_size);
 	aFile.close();
-	zip_fclose(file);
-	zip_close(archive);
+	mz_zip_reader_end(&archive);
 	free(buffer);
 
 	zipPath = fileName;
@@ -51,20 +51,20 @@ void* FormatLoader::readFile(const char* path, size_t check) {
 	std::string zipLocation = zipPath.substr(0, check + 4);
 	std::string pathInPackage = zipPath.substr(check + 5, zipPath.length());
 	// Opening and extracting asset from package
-	zip* archive = zip_open(zipLocation.c_str(), 0, 0);
-	if (!archive)
+	mz_zip_archive archive;
+	memset(&archive, 0, sizeof(archive));
+	auto status = mz_zip_reader_init_file(&archive, zipLocation.c_str(), 0);
+	if (!status)
 		RM_DEBUG_MESSAGE("Error while trying to open zip archive: " + zipLocation, 1);
+	
+	auto index = mz_zip_reader_locate_file(&archive, pathInPackage.c_str(), "", 0);
+	mz_zip_archive_file_stat fileStat;
+	mz_zip_reader_file_stat(&archive, index, &fileStat);
+	void* buffer = malloc(static_cast<size_t>(fileStat.m_uncomp_size));
+	// TODO: Replace with extract_to_heap
+	mz_zip_reader_extract_to_mem(&archive, index, buffer, fileStat.m_uncomp_size, 0);
 
-	auto index = zip_name_locate(archive, pathInPackage.c_str(), 0);
-	zip_stat_t stat;
-	zip_stat_index(archive, index, 0, &stat);
-	void* buffer = malloc(static_cast<size_t>(stat.size));
-	zip_file* file = zip_fopen(archive, pathInPackage.c_str(), 0);
-	if (!file)
-		RM_DEBUG_MESSAGE("Libzip error: (" + std::string(zip_strerror(archive)) + ") on path: (" + pathInPackage + ").", 1);
+	mz_zip_reader_end(&archive);
 
-	zip_fread(file, buffer, stat.size);
-	zip_fclose(file);
-	zip_close(archive);
 	return buffer;
 }
